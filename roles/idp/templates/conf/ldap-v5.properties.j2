@@ -61,4 +61,4 @@ idp.attribute.resolver.LDAP.bindDN              = %{idp.authn.LDAP.bindDN:undefi
 idp.attribute.resolver.LDAP.useStartTLS         = %{idp.authn.LDAP.useStartTLS:true}
 idp.attribute.resolver.LDAP.trustCertificates   = %{idp.authn.LDAP.trustCertificates:undefined}
 idp.attribute.resolver.LDAP.searchFilter        = {{ idp_attribute_resolver_LDAP_searchFilter | default ('(uid=$resolutionContext.principal)') }}
-idp.attribute.resolver.LDAP.exportAttributes    = *
+idp.attribute.resolver.LDAP.exportAttributes    = {{ idp_attribute_resolver_LDAP_exportAttributes | default ('uid givenName sn cn mail displayName eduPersonAffiliation eduPersonEntitlement eduPersonAssurance')}}

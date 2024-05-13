@@ -15,8 +15,6 @@ idp.authn.LDAP.useStartTLS                      = false
 #idp.authn.LDAP.connectTimeout                  = PT3S
 # Time in milliseconds to wait for responses
 #idp.authn.LDAP.responseTimeout                 = PT3S
-# Connection strategy to use when multiple URLs are supplied, either ACTIVE_PASSIVE, ROUND_ROBIN, RANDOM
-#idp.authn.LDAP.connectionStrategy              = ACTIVE_PASSIVE
 
 {% if (idp_authn_LDAP_trustCertificates is defined) and (idp_authn_LDAP_trustCertificates in ['Yes','yes','True','true'] ) %}
 ## SSL configuration, either jvmTrust, certificateTrust, or keyStoreTrust
@@ -42,12 +40,9 @@ idp.authn.LDAP.userFilter                      = {{ idp_authn_LDAP_userFilter | 
 # for AD: idp.authn.LDAP.bindDN=adminuser@domain.com
 idp.authn.LDAP.bindDN                          = {{ idp_authn_LDAP_bindDN }}
 
-# Handling account state with OpenLDAP/AD for Shibboleth IdP v5.x
+# Handling account state with OpenLDAP/AD for Shibboleth IdP v4.x
 # https://tools.ietf.org/html/draft-behera-ldap-password-policy-10
 idp.authn.LDAP.usePasswordPolicy                = {{ idp_authn_LDAP_usePasswordPolicy | default('false') }}
-
-# https://tools.ietf.org/html/draft-vchu-ldap-pwd-policy-00
-idp.authn.LDAP.usePasswordExpiration            = {{ idp_authn_LDAP_usePasswordExpiration | default('false') }}
 
 
 # LDAP attribute configuration, see attribute-resolver.xml
@@ -55,10 +50,9 @@ idp.authn.LDAP.usePasswordExpiration            = {{ idp_authn_LDAP_usePasswordE
 idp.attribute.resolver.LDAP.ldapURL             = %{idp.authn.LDAP.ldapURL}
 idp.attribute.resolver.LDAP.connectTimeout      = %{idp.authn.LDAP.connectTimeout:PT3S}
 idp.attribute.resolver.LDAP.responseTimeout     = %{idp.authn.LDAP.responseTimeout:PT3S}
-idp.attribute.resolver.LDAP.connectionStrategy  = %{idp.authn.LDAP.connectionStrategy:ACTIVE_PASSIVE}
 idp.attribute.resolver.LDAP.baseDN              = %{idp.authn.LDAP.baseDN:undefined}
 idp.attribute.resolver.LDAP.bindDN              = %{idp.authn.LDAP.bindDN:undefined}
 idp.attribute.resolver.LDAP.useStartTLS         = %{idp.authn.LDAP.useStartTLS:true}
 idp.attribute.resolver.LDAP.trustCertificates   = %{idp.authn.LDAP.trustCertificates:undefined}
 idp.attribute.resolver.LDAP.searchFilter        = {{ idp_attribute_resolver_LDAP_searchFilter | default ('(uid=$resolutionContext.principal)') }}
-idp.attribute.resolver.LDAP.exportAttributes    = uid givenName sn cn mail displayName eduPersonAffiliation eduPersonEntitlement eduPersonAssurance
+idp.attribute.resolver.LDAP.exportAttributes    = {{ idp_attribute_resolver_LDAP_exportAttributes | default ('uid givenName sn cn mail displayName eduPersonAffiliation eduPersonEntitlement eduPersonAssurance')}}

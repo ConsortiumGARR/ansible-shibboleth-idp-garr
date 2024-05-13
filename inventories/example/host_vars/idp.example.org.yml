@@ -51,6 +51,7 @@ idp_authn_LDAP_userFilter: "uid={user}"
 idp_authn_LDAP_usePasswordPolicy: "false"
 idp_authn_LDAP_usePasswordExpiration: "false"
 idp_attribute_resolver_LDAP_searchFilter: "(uid=$resolutionContext.principal)"
+idp_attribute_resolver_LDAP_exportAttributes: "uid givenName sn cn mail displayName eduPersonAffiliation eduPersonEntitlement eduPersonAssurance"
 
 ### Shibboleth IdP Metadata Providers
 ### You can obtain a public key from a certificate using a command such as:
