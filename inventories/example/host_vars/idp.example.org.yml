@@ -14,7 +14,7 @@ common_ssl_key: "{{ fqdn }}.key"
 common_swap_file_name: "swapfile"
 common_swap_file_size: "2048"
 common_swap_file_state: "present"
-common_mirror_url: "http://deb.debian.org/debian/"
+common_mirror_url: "http://debian.mirror.garr.it/debian/"
 
 common_root_user_pw: "root_password"
 common_ntp_timezone: "UTC"
