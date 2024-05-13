@@ -1,0 +1,120 @@
+---
+# tasks file for common-configure.yml
+
+- name: "Check if 'authorized_keys' is provided by Ansible Host"
+  become: false
+  ansible.builtin.stat:
+    path: "{{ files_dir }}/{{ fqdn }}/ssh/authorized_keys"
+  register: ssh_authorized_keys
+  delegate_to: localhost
+  changed_when: false
+
+- name: "Enable user SSH access with their authorized keys"
+  ansible.builtin.blockinfile:
+    block: "{{ lookup('ansible.builtin.file', files_dir+'/'+fqdn+'/ssh/authorized_keys') }}"
+    path: "/home/{{ ansible_env.SUDO_USER }}/.ssh/authorized_keys"
+    marker: "<!-- {mark} ANSIBLE MANAGED BLOCK - Authorized SSH Keys -->"
+    owner: "{{ ansible_env.SUDO_USER }}"
+    group: "{{ ansible_env.SUDO_USER }}"
+    mode: "0400"
+  when:
+    - ssh_authorized_keys.stat.exists == True
+
+- name: "Add host to /etc/hosts"
+  ansible.builtin.lineinfile:
+    dest: "/etc/hosts"
+    regexp: "^{{ ansible_default_ipv4['address'] }} "
+    line: "{{ ansible_default_ipv4['address'] }} {{ fqdn }} {{ ansible_hostname }}"
+    owner: "root"
+    group: "root"
+    mode: "0644"
+    insertbefore: "BOF"
+    state: present
+
+- name: "Configure the 'hostname' with the FQDN provided"
+  ansible.builtin.hostname:
+    name: "{{ fqdn }}"
+
+- name: "Add root user password"
+  ansible.builtin.user:
+    name: "root"
+    password: "{{ common_root_user_pw | password_hash('sha512', 65534 | random(seed=inventory_hostname) | string) }}"
+
+- name: "Disable Root SSH Login access"
+  ansible.builtin.lineinfile:
+    dest: "/etc/ssh/sshd_config"
+    regexp: "^(# *)?PermitRootLogin "
+    line: "PermitRootLogin no"
+    state: present
+  notify:
+    - "Restart SSH"
+
+- name: "Be sure that the '/etc/systemd/timesyncd.conf.d/' subdirectory exists"
+  ansible.builtin.file:
+    path: "/etc/systemd/timesyncd.conf.d"
+    state: directory
+    mode: '0755'
+
+- name: "Configure NTP on Systemd Timesyncd"
+  ansible.builtin.template:
+    src: ntp.conf.j2
+    dest: /etc/systemd/timesyncd.conf.d/ntp.conf
+  notify:
+    - "Restart Systemd Timesyncd"
+
+- name: "Set timezone variable"
+  ansible.builtin.template:
+    src: timezone.j2
+    dest: /etc/timezone
+    owner: "root"
+    group: "root"
+    mode: "0644"
+    backup: "yes"
+  notify:
+    - "Update Timezone"
+
+- name: "Set /etc/localtime"
+  ansible.builtin.file:
+    src: "/usr/share/zoneinfo/{{ common_ntp_timezone }}"
+    dest: "/etc/localtime"
+    state: link
+
+- name: "Configure Fail2Ban service"
+  ansible.builtin.copy:
+    src: files/jail.conf
+    dest: /etc/fail2ban/jail.d/jail.conf
+    owner: root
+    group: root
+    mode: "0644"
+  notify:
+    - "Restart Fail2Ban"
+
+- name: "Start Fail2Ban by re-reading configs"
+  become: true
+  become_method: sudo
+  ansible.builtin.systemd_service:
+    name: "fail2ban"
+    daemon_reload: True
+    enabled: True
+    state: started
+  when: ansible_facts['os_family'] == 'Debian'
+
+- name: "Assign the right privileges to the /tmp directory"
+  ansible.builtin.file:
+    path: "/tmp"
+    state: directory
+    mode: "u+rwx,g+rwx,o+rwt"
+
+- name: "Ensure the en_US.UTF-8 locale exists"
+  community.general.locale_gen:
+    name: "en_US.UTF-8"
+    state: present
+
+- name: "Check current locale settings"
+  shell: localectl status
+  register: locale_status
+  changed_when: false
+
+- name: "Set locale to en_US.UTF-8 if not already set"
+  command: localectl set-locale LANG='en_US.UTF-8' LANGUAGE='en_US.UTF-8'
+  when: "'System Locale: LANG=en_US.UTF-8' not in locale_status.stdout_lines"

@@ -1,0 +1,2 @@
+---
+vault_file: "{{ lookup('env','ANSIBLE_VAULT_PASSWORD_FILE') }}"

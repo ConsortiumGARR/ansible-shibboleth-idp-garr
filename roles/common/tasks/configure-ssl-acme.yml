@@ -1,0 +1,141 @@
+---
+# tasks file for common-ssl-acme.yml
+
+- name: "ACME - Install Certbot required packages"
+  ansible.builtin.apt:
+    name:
+      ["python3", "python3-venv", "libaugeas0"]
+    install_recommends: no
+    state: latest
+
+- name: "ACME - Install Certbot in a Python VirtualEnvironment"
+  ansible.builtin.pip:
+    name:
+      - certbot
+      - certbot-apache
+    virtualenv: /opt/certbot
+    virtualenv_command: /usr/bin/python3 -m venv
+    state: latest
+
+- name: "ACME - Prepare the Certbot command"
+  ansible.builtin.file:
+    src: /opt/certbot/bin/certbot
+    dest: /usr/bin/certbot
+    state: link
+
+- name: "ACME - Ensure a job that runs at 0 and 12 exists"
+  ansible.builtin.cron:
+    name: "ACME renew"
+    minute: "0"
+    hour: "0,12"
+    job: "root /opt/certbot/bin/python -c 'import random; import time; time.sleep(random.random() * 3600)' && sudo certbot renew -q"
+
+- name: "ACME - Account Registration"
+  ansible.builtin.expect:
+    creates: "/etc/letsencrypt/accounts/{{ common_ssl_ca_acme_url | urlsplit('hostname') }}/{{ common_ssl_ca_acme_url | urlsplit('path') }}"
+    command: certbot register --email {{ common_ssl_ca_acme_email }} --server {{ common_ssl_ca_acme_url }} --eab-kid {{ common_ssl_ca_acme_key_id }} --eab-hmac-key {{ common_ssl_ca_acme_hmac }} --agree-tos
+    responses:
+      (?i)\(Y\)es\/\(N\)o: 'N'
+
+- name: "ACME - Create SSL credentials with RSA"
+  ansible.builtin.command: certbot certonly --standalone --email {{ common_ssl_ca_acme_email }} --server {{ common_ssl_ca_acme_url }} --domain {{ fqdn }} --key-type rsa --rsa-key-size {{ common_ssl_ca_acme_rsa_size }} --cert-name {{ fqdn }}
+  args:
+    creates: /etc/letsencrypt/live/{{ fqdn }}/cert.pem
+  when:
+    - common_ssl_ca_acme_rsa_size is defined and common_ssl_ca_acme_rsa_size != ''
+    - common_ssl_ca_acme_elliptic_curve is not defined
+
+- name: "ACME - Create SSL credentials with ECC"
+  ansible.builtin.command: certbot certonly --standalone --email {{ common_ssl_ca_acme_email }} --server {{ common_ssl_ca_acme_url }} --domain {{ fqdn }} --key-type ecdsa --elliptic-curve {{ common_ssl_ca_acme_elliptic_curve }} --cert-name {{ fqdn }}
+  args:
+    creates: /etc/letsencrypt/live/{{ fqdn }}/cert.pem
+  when:
+    - common_ssl_ca_acme_rsa_size is not defined
+    - common_ssl_ca_acme_elliptic_curve is defined and common_ssl_ca_acme_elliptic_curve != ''
+
+- name: "ACME - Check that SSL Certificate is in '/etc/ssl/certs'"
+  ansible.builtin.file:
+    src: "/etc/letsencrypt/live/{{ fqdn }}/cert.pem"
+    dest: "/etc/ssl/certs/ssl-cert.crt"
+    owner: root
+    group: root
+    state: link
+    mode: '0644'
+  register: ssl_cert_acme
+
+- name: "ACME - Check that SSL Certificate is in '/etc/ssl/certs'"
+  ansible.builtin.file:
+    src: "/etc/letsencrypt/live/{{ fqdn }}/privkey.pem"
+    dest: "/etc/ssl/private/ssl-cert.key"
+    owner: root
+    group: ssl-cert
+    state: link
+    mode: '0644'
+  register: ssl_key_acme
+
+- name: "ACME - Check that 'ca-certificates' directory exists"
+  ansible.builtin.file:
+    state: "directory"
+    path: "/usr/local/share/ca-certificates"
+
+- name: "ACME - Install CA Certificate"
+  ansible.builtin.file:
+    src: "/etc/letsencrypt/live/{{ fqdn }}/chain.pem"
+    dest: "/usr/local/share/ca-certificates/cacert.crt"
+    owner: root
+    group: root
+    state: link
+    mode: '0644'
+  register: ssl_ca_acme
+
+- name: "Update cert index"
+  ansible.builtin.shell: "/usr/sbin/update-ca-certificates"
+  when: ssl_ca_acme['changed'] == true
+
+- name: "Check if Apache exists"
+  ansible.builtin.stat:
+    path: "/etc/init.d/apache2"
+  register: check_apache2
+
+- name: "Restart Apache"
+  become: true
+  become_method: sudo
+  ansible.builtin.systemd_service:
+    name: apache2
+    daemon_reload: yes
+    state: restarted
+  when:
+    - check_apache2.stat.exists == True
+    - ssl_ca_acme['changed'] == True or ssl_key_acme['changed'] == True or ssl_cert_acme['changed'] == True
+
+- name: "Check if OpenLDAP exists"
+  ansible.builtin.stat:
+    path: "/etc/init.d/slapd"
+  register: check_slapd
+
+- name: "Restart OpenLDAP"
+  become: true
+  become_method: sudo
+  ansible.builtin.systemd_service:
+    name: slapd
+    daemon_reload: yes
+    state: restarted
+  when:
+    - check_slapd.stat.exists == True
+    - ssl_ca_acme['changed'] == True or ssl_key_acme['changed'] == True or ssl_cert_acme['changed'] == True
+
+- name: "Check if Jetty exists"
+  ansible.builtin.stat:
+    path: "/etc/init.d/jetty"
+  register: check_jetty
+
+- name: "Restart Jetty"
+  become: true
+  become_method: sudo
+  ansible.builtin.systemd_service:
+    name: jetty
+    daemon-reload: True
+    state: restarted
+  when:
+    - check_jetty.stat.exists == True
+    - ssl_ca_acme['changed'] == True or ssl_key_acme['changed'] == True or ssl_cert_acme['changed'] == True

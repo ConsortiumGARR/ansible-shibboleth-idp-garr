@@ -1,0 +1,13 @@
+---
+# tasks file for apache
+- name: "Install Apache"
+  ansible.builtin.import_tasks: apache-install.yml
+  tags: apache
+
+- name: "Configure Apache"
+  ansible.builtin.import_tasks: apache-configure.yml
+  tags: apache
+
+- name: "Remove Apache completely"
+  ansible.builtin.import_tasks: apache-remove.yml
+  tags: [ never, apache-remove, remove ]

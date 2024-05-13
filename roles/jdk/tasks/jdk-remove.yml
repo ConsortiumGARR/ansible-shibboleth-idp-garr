@@ -1,0 +1,33 @@
+---
+# tasks file for jdk-remove.yml
+
+- name: "Remove Amazon Corretto JDK"
+  block:
+    - name: Remove Amazon Corretto JDK signature key
+      ansible.builtin.file:
+        path: "/etc/apt/keyrings/amazon-corretto-jdk.asc"
+        state: absent
+
+    - name: "Remove Amazon Corretto JDK APT repository"
+      ansible.builtin.apt_repository:
+        repo: "deb [arch=amd64 signed-by=/etc/apt/keyrings/amazon-corretto-jdk.asc] https://apt.corretto.aws stable main"
+        filename: amazon-corretto-jdk
+        state: absent
+
+- name: "Remove Amazon Corretto JDK apt packages"
+  ansible.builtin.apt:
+    name:
+      [
+        "software-properties-common",
+        "java-{{ jdk_version }}-amazon-corretto-jdk",
+      ]
+    autoclean: true
+    autoremove: true
+    clean: true
+    purge: yes
+    state: absent
+
+- name: "Remove Amazon Corretto 'default-java' link"
+  ansible.builtin.file:
+    path: "/usr/lib/jvm/default-java"
+    state: absent

@@ -1,0 +1,6 @@
+---
+- name: "Install needed packages"
+  ansible.builtin.apt:
+    name: [ "apache2", "apache2-utils" ]
+    install_recommends: no
+    state: latest

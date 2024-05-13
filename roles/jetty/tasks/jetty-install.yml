@@ -1,0 +1,22 @@
+---
+# tasks file for jetty-install.yml
+
+- name: "Create 'jetty' group"
+  ansible.builtin.group:
+    name: "jetty"
+    state: present
+
+- name: "Create 'jetty' user"
+  ansible.builtin.user:
+    name: "jetty"
+    groups: "jetty"
+    createhome: "no"
+
+- name: Download Jetty v{{ jetty_distribution }} package
+  ansible.builtin.get_url:
+    url: https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-home/{{ jetty_distribution }}/jetty-home-{{ jetty_distribution }}.tar.gz
+    checksum: sha1:https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-home/{{ jetty_distribution }}/jetty-home-{{ jetty_distribution }}.tar.gz.sha1
+    dest: "/usr/local/src/jetty-home-{{ jetty_distribution }}.tar.gz"
+    timeout: "20"
+    owner: "jetty"
+    group: "jetty"

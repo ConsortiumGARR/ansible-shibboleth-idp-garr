@@ -1,0 +1,4 @@
+---
+# default vars for apache role
+
+apache_admin_email: "root@localhost"

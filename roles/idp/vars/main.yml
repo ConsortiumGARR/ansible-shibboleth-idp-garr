@@ -1,0 +1,6 @@
+---
+# vars file for idp
+
+java_home_dir: "/usr/lib/jvm/java-{{ jdk_version }}-amazon-corretto"
+
+shib_idp_pkg_url: "https://shibboleth.net/downloads/identity-provider/archive/{{ idp_version }}/shibboleth-identity-provider-{{ idp_version }}.tar.gz"

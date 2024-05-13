@@ -1,0 +1,51 @@
+---
+# default vars for common role
+
+## Full Qualified Domain Name of the Remote Host
+fqdn: "idp.example.org"
+
+## Directory where the Remote Host files are stored
+## and where Ansible go to find them
+files_dir: "{{ playbook_dir }}/inventories/files"
+
+## SSL with Traditional CA
+### Each variable contains the filename of a file
+### contained into <files_dir>/<fqdn>/ssl directory
+common_ssl_ca: "ca.crt"
+common_ssl_cert: "idp.example.org.crt"
+common_ssl_key: "idp.example.org.key"
+
+## SSL with ACME
+#common_ssl_ca_acme_email: "<EMAIL>"
+#common_ssl_ca_acme_url: "<ACME URL>"
+#common_ssl_ca_acme_key_id: "<KEY ID>"
+#common_ssl_ca_acme_hmac: "<HMAC KEY>"
+
+## Enable only one of the following variable
+## to create the SSL credentials with RSA or ECC.
+#common_ssl_ca_acme_rsa_size: "3072"
+#common_ssl_ca_acme_elliptic_curve: "secp384r1"
+
+## Add(present) or Remove(absent) SWAP file.
+## Remove entirely "swap" section if you use a dedicated partition for SWAP or if you don't need it.
+common_swap_file_name: "swapfile"
+common_swap_file_size: "2048"
+common_swap_file_state: "present"
+
+## Delete "common_mirror_url" to use the default distribution APT repository
+common_mirror_url: "http://deb.debian.org/debian/"
+
+## Set the "root" user password
+common_root_user_pw: "root_password"
+
+## Configure NTP service
+## To list all available time zones run `timedatectl list-timezones`
+## on the remote host o leave the default value
+common_ntp_timezone: "UTC"
+common_ntp_servers: "0.debian.pool.ntp.org 1.debian.pool.ntp.org 2.debian.pool.ntp.org 3.debian.pool.ntp.org"
+
+## Configure the Remote Host resolv.conf nameservers
+## common_nameservers has to be a list
+common_nameservers:
+  - "1.0.0.1"
+  - "1.1.1.1"

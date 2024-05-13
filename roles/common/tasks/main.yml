@@ -1,0 +1,28 @@
+---
+# tasks file for common role
+
+- name: "Install Common"
+  ansible.builtin.import_tasks: common-install.yml
+  tags: common
+
+- name: "Configure Common"
+  ansible.builtin.import_tasks: common-configure.yml
+  tags: common
+
+- name: "Configure SSL"
+  ansible.builtin.import_tasks: "configure-ssl.yml"
+  tags:
+    - common
+    - ssl_update
+
+- name: "Configure SWAP file"
+  ansible.builtin.import_tasks: "manage-swapfile.yml"
+  when:
+    - common_swap_file_name is defined and common_swap_file_name != ''
+    - common_swap_file_size is defined and common_swap_file_size != ''
+    - common_swap_file_state is defined and (common_swap_file_state == 'present' or common_swap_file_state == 'absent')
+  tags: common
+
+- name: "Remove all common tasks files completely"
+  ansible.builtin.import_tasks: common-remove.yml
+  tags: [ never, common-remove, remove ]

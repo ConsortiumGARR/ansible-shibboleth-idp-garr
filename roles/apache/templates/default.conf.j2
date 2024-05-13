@@ -1,0 +1,5 @@
+<VirtualHost *:80>
+        ServerName "{{ fqdn }}"
+        Redirect permanent "/" "https://{{ fqdn }}/"
+        RedirectMatch permanent ^/(.*)$ https://{{ fqdn }}/$1
+</VirtualHost>

@@ -1,0 +1,12 @@
+---
+# file: shib-idp-servers.yml
+- name: Shibboleth Identity Provider Playbook
+  hosts: shib_idp
+  become: true
+  roles:
+    - common
+    - apache
+    - jdk
+    - jetty
+    - idp
+    - sys-update

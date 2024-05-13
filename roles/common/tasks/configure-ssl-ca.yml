@@ -1,0 +1,84 @@
+---
+- name: "Traditional CA - Check that SSL Certificate is in '/etc/ssl/certs'"
+  ansible.builtin.copy:
+    src: "{{ files_dir }}/{{ fqdn }}/ssl/{{ common_ssl_cert }}"
+    dest: "/etc/ssl/certs/ssl-cert.crt"
+    owner: "root"
+    group: "ssl-cert"
+    mode: "0644"
+  register: ssl_cert
+
+- name: "Traditional CA - Check that SSL Key is in '/etc/ssl/private'"
+  ansible.builtin.copy:
+    src: "{{ files_dir }}/{{ fqdn }}/ssl/{{ common_ssl_key }}"
+    dest: "/etc/ssl/private/ssl-cert.key"
+    owner: "root"
+    group: "ssl-cert"
+    mode: "0440"
+  register: ssl_key
+
+- name: "Traditional CA - Check that 'ca-certificates' directory exists"
+  ansible.builtin.file:
+    state: "directory"
+    path: "/usr/local/share/ca-certificates"
+
+- name: "Traditional CA - Install CA Certificate"
+  ansible.builtin.copy:
+    src: "{{ files_dir }}/{{ fqdn }}/ssl/{{ common_ssl_ca }}"
+    dest: "/usr/local/share/ca-certificates/cacert.crt"
+    owner: "root"
+    group: "root"
+    mode: "0644"
+  register: ssl_ca
+
+- name: "Update cert index"
+  ansible.builtin.shell: "/usr/sbin/update-ca-certificates"
+  when: ssl_ca['changed'] == true
+
+- name: "Check if Apache exists"
+  ansible.builtin.stat:
+    path: "/etc/init.d/apache2"
+  register: check_apache2
+
+- name: "Restart Apache"
+  become: true
+  become_method: sudo
+  ansible.builtin.systemd_service:
+    name: apache2
+    daemon_reload: yes
+    state: restarted
+  when:
+    - check_apache2.stat.exists == True
+    - ssl_ca['changed'] == True or ssl_key['changed'] == True or ssl_cert['changed'] == True
+
+- name: "Check if OpenLDAP exists"
+  ansible.builtin.stat:
+    path: "/etc/init.d/slapd"
+  register: check_slapd
+
+- name: "Restart OpenLDAP"
+  become: true
+  become_method: sudo
+  ansible.builtin.systemd_service:
+    name: slapd
+    daemon_reload: yes
+    state: restarted
+  when:
+    - check_slapd.stat.exists == True
+    - ssl_ca['changed'] == True or ssl_key['changed'] == True or ssl_cert['changed'] == True
+
+- name: "Check if Jetty exists"
+  ansible.builtin.stat:
+    path: "/etc/init.d/jetty"
+  register: check_jetty
+
+- name: "Restart Jetty"
+  become: true
+  become_method: sudo
+  ansible.builtin.systemd_service:
+    name: jetty
+    daemon-reload: True
+    state: restarted
+  when:
+    - check_jetty.stat.exists == True
+    - ssl_ca['changed'] == True or ssl_key['changed'] == True or ssl_cert['changed'] == True

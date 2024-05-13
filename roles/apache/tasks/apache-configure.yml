@@ -1,0 +1,109 @@
+---
+- name: "Add Apache user 'www-data' to 'ssl-cert' group"
+  ansible.builtin.user:
+    name: "www-data"
+    groups: "ssl-cert"
+
+- name: "Be sure to have Apache modules alias, SSL, include, negotiation, headers and proxy enabled"
+  community.general.apache2_module:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - alias
+    - ssl
+    - include
+    - negotiation
+    - headers
+    - proxy_http
+  notify:
+    - "Restart Apache"
+
+- name: "Check if the Apache HTTP VirtualHost site is already enabled"
+  ansible.builtin.stat:
+    path: "/etc/apache2/sites-enabled/{{ fqdn }}.conf"
+  register: http_site_apache
+  changed_when: false
+
+- name: "Configure the Apache HTTP VirtualHost that redirect all traffic to HTTPS"
+  ansible.builtin.template:
+    src: "default.conf.j2"
+    dest: "/etc/apache2/sites-available/{{ fqdn }}.conf"
+    owner: "root"
+    group: "root"
+    mode: "0644"
+  when:
+    - http_site_apache.stat.exists == False
+  notify:
+    - "Restart Apache"
+
+- name: "Enable Apache HTTP VirtualHost"
+  ansible.builtin.shell: "a2ensite -q {{ fqdn }}"
+  when:
+    - http_site_apache.stat.exists == False
+  notify:
+    - "Restart Apache"
+
+- name: "Check if Apache HTTPS VirtualHost is already enabled"
+  ansible.builtin.stat:
+    path: "/etc/apache2/sites-enabled/{{ fqdn }}-ssl.conf"
+  register: ssl_site_apache
+  changed_when: false
+
+- name: "Add Apache HTTPS VirtualHost"
+  ansible.builtin.template:
+    src: default-ssl.conf.j2
+    dest: /etc/apache2/sites-available/{{ fqdn }}-ssl.conf
+    owner: "root"
+    group: "root"
+    mode: "0644"
+  when:
+    - ssl_site_apache.stat.exists == False
+  notify:
+    - "Restart Apache"
+
+- name: "Enable Apache HTTPS VirtualHost"
+  ansible.builtin.shell: "a2ensite -q {{ fqdn }}-ssl"
+  when: 
+    - ssl_site_apache.stat.exists == False
+  notify:
+    - "Restart Apache"
+
+- name: "Disable Default Apache HTTP VirtualHost"
+  ansible.builtin.shell: "a2dissite -q 000-default"
+  when: 
+    - ssl_site_apache.stat.exists == False
+  notify:
+    - "Restart Apache"
+
+- name: "Check if Apache localized error pages conf is alread enabled"
+  ansible.builtin.stat:
+    path: "/etc/apache2/conf-enabled/localized-error-pages.conf"
+  register: apache_local_error_pages
+  changed_when: false
+
+- name: "Load localized Apache error pages"
+  ansible.builtin.copy:
+    src: files/localized-error-pages.conf
+    dest: /etc/apache2/conf-available/localized-error-pages.conf
+    owner: "root"
+    group: "root"
+    mode: "0644"
+  when: 
+    - apache_local_error_pages.stat.exists == False
+  notify:
+    - "Restart Apache"
+
+- name: "Enable Apache Localized error pages"
+  ansible.builtin.shell: "a2enconf -q localized-error-pages"
+  when: 
+    - apache_local_error_pages.stat.exists == False
+  notify:
+    - "Restart Apache"
+
+- name: "Restart Apache if CA, CRT or KEY are changed"
+  ansible.builtin.systemd_service:
+    state: restarted
+    name: apache2
+    daemon_reload: True
+  when:
+    - ssl_cert['changed'] == True or ssl_key['changed'] == True or ssl_ca['changed'] == True or ssl_cert_acme['changed'] == True or ssl_key_acme['changed'] == True or ssl_ca_acme['changed'] == True

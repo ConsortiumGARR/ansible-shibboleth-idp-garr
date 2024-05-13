@@ -1,0 +1,21 @@
+---
+# default vars for jetty role
+# CHANGE THEM ONLY IF YOU KNOW WHAT YOU ARE DOING
+
+# Jetty 12 - Shibboleth v5.x
+jetty_distribution: "12.0.8"
+jetty_logback_lib_version: "1.5.3"
+jetty_requestlog_file: "jetty-requestlog.xml"
+jetty_start_ini: "files/java{{ jdk_version }}/start.ini"
+
+# Jetty 11 - Shibboleth v5.x
+# jetty_distribution: "11.0.19"
+# jetty_logback_lib_version: "1.4.14"
+# jetty_requestlog_file: "jetty-requestlog.xml"
+# jetty_start_ini: "files/java{{ jdk_version }}/start-10-11.ini"
+
+# Jetty 10 - Shibboleth v4.3.x
+# jetty_distribution: "10.0.19"
+# jetty_logback_lib_version: "1.3.13"
+# jetty_requestlog_file: "jetty-requestlog-10.xml"
+# jetty_start_ini: "files/java{{ jdk_version }}/start-10-11.ini"

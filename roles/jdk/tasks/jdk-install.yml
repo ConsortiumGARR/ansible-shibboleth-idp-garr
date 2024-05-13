@@ -1,0 +1,58 @@
+---
+# task file for jdk-install.yml
+
+# With  ansible-core 2.15
+# - name: Add Amazon Corretto JDK repo using key from URL
+#   ansible.builtin.deb822_repository:
+#     name: amazon-corretto-jdk
+#     types: deb
+#     uris: https://apt.corretto.aws
+#     suites: "stable"
+#     components: "main"
+#     signed_by: https://apt.corretto.aws/corretto.key
+
+- name: Add Amazon Corretto JDK repo using key from URL
+  block:
+    - name: Get Amazon Corretto JDK signature key
+      ansible.builtin.get_url:
+        url: https://apt.corretto.aws/corretto.key
+        dest: /etc/apt/keyrings/amazon-corretto-jdk.asc
+
+    - name: Add Amazon Corretto JDK APT repository
+      ansible.builtin.apt_repository:
+        repo: "deb [arch=amd64 signed-by=/etc/apt/keyrings/amazon-corretto-jdk.asc] https://apt.corretto.aws stable main"
+        filename: amazon-corretto-jdk
+        state: present
+
+- name: "Check if Amazon Corretto JDK is already installed"
+  ansible.builtin.stat:
+    path: "/usr/lib/jvm/default-java"
+  register: default_java_link
+  changed_when: false
+
+- name: "Run 'apt-get update' if Amazon Corretto JDK is not installed"
+  ansible.builtin.apt:
+    update_cache: yes
+  when:
+    - default_java_link.stat.exists == False
+
+- name: "Install Amazon Corretto JDK"
+  ansible.builtin.apt:
+    name:
+      [
+        "software-properties-common",
+        "java-{{ jdk_version }}-amazon-corretto-jdk",
+      ]
+    state: latest
+    install_recommends: no
+
+- name: "Correct java version selected"
+  community.general.alternatives:
+    name: "java"
+    path: "/usr/lib/jvm/java-{{ jdk_version }}-amazon-corretto/bin/java"
+
+- name: "Create the 'default-java' link"
+  ansible.builtin.file:
+    src: "/usr/lib/jvm/java-{{ jdk_version }}-amazon-corretto"
+    dest: "/usr/lib/jvm/default-java"
+    state: link

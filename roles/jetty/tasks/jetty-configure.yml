@@ -1,0 +1,120 @@
+---
+# tasks file for jetty-configure.yml
+
+- name: "Extract Jetty Package"
+  ansible.builtin.unarchive:
+    src: "/usr/local/src/jetty-home-{{ jetty_distribution }}.tar.gz"
+    dest: "/usr/local/src"
+    remote_src: "yes"
+    owner: "jetty"
+    group: "jetty"
+
+- name: "Create 'jetty-src' link"
+  ansible.builtin.file:
+    src: "/usr/local/src/jetty-home-{{ jetty_distribution }}"
+    dest: "/usr/local/src/jetty-src"
+    state: link
+  register: jetty_src_link
+
+- name: "Create '/etc/init.d/jetty' link"
+  ansible.builtin.file:
+    src: "/usr/local/src/jetty-src/bin/jetty.sh"
+    dest: "/etc/init.d/jetty"
+    owner: "jetty"
+    group: "jetty"
+    state: link
+
+- name: "Create Jetty's directories"
+  ansible.builtin.file:
+    path: "{{ item }}"
+    owner: "jetty"
+    group: "jetty"
+    state: directory
+    recurse: True
+  loop:
+    - /opt/jetty
+    - /opt/jetty/webapps
+    - /opt/jetty/tmp
+    - /opt/jetty/etc
+    - /opt/jetty/logs
+    - /opt/jetty/lib
+    - /opt/jetty/lib/ext
+    - /opt/jetty/resources
+    - /opt/jetty/lib/logging
+    - /var/log/jetty
+
+- name: "Load Jetty Systemd Unit"
+  ansible.builtin.copy:
+    src: "files/java{{ jdk_version }}/jetty.service"
+    dest: "/etc/systemd/system/jetty.service"
+    owner: jetty
+    group: jetty
+
+- name: "Add jetty-logging.properties to control server logging level"
+  ansible.builtin.copy:
+    src: "files/java{{ jdk_version }}/jetty-logging.properties"
+    dest: "/opt/jetty/resources/jetty-logging.properties"
+    owner: jetty
+    group: jetty
+
+- name: "Enable logging-logback as suggested by Shibboleth Consortium"
+  block:
+    - name: Download logback-classic-{{ jetty_logback_lib_version }}.jar
+      ansible.builtin.get_url:
+        url: https://repo1.maven.org/maven2/ch/qos/logback/logback-classic/{{ jetty_logback_lib_version }}/logback-classic-{{ jetty_logback_lib_version }}.jar
+        checksum: sha1:https://repo1.maven.org/maven2/ch/qos/logback/logback-classic/{{ jetty_logback_lib_version }}/logback-classic-{{ jetty_logback_lib_version }}.jar.sha1
+        dest: "/opt/jetty/lib/logging/logback-classic-{{ jetty_logback_lib_version }}.jar"
+        timeout: "20"
+        owner: "jetty"
+        group: "jetty"
+    - name: Download logback-core-{{ jetty_logback_lib_version }}.jar
+      ansible.builtin.get_url:
+        url: https://repo1.maven.org/maven2/ch/qos/logback/logback-core/{{ jetty_logback_lib_version }}/logback-core-{{ jetty_logback_lib_version }}.jar
+        checksum: sha1:https://repo1.maven.org/maven2/ch/qos/logback/logback-core/{{ jetty_logback_lib_version }}/logback-core-{{ jetty_logback_lib_version }}.jar.sha1
+        dest: "/opt/jetty/lib/logging/logback-core-{{ jetty_logback_lib_version }}.jar"
+        timeout: "20"
+        owner: "jetty"
+        group: "jetty"
+    - name: "Copy default 'logback.xml' to the Jetty Base"
+      ansible.builtin.copy:
+        remote_src: True
+        src: "/usr/local/src/jetty-src/modules/logging/logback/resources/logback.xml"
+        dest: "/opt/jetty/resources/logback.xml"
+        owner: jetty
+        group: jetty
+    - name: "Copy Shibboleth provided 'jetty-requestlog.xml' file"
+      ansible.builtin.copy:
+        src: "files/java{{ jdk_version }}/{{ jetty_requestlog_file }}"
+        dest: "/opt/jetty/etc/jetty-requestlog.xml"
+        owner: jetty
+        group: jetty
+
+- name: "Configure Jetty"
+  ansible.builtin.copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: "jetty"
+    group: "jetty"
+  loop:
+    - {
+        src: "files/java{{ jdk_version }}/jetty",
+        dest: "/etc/default/jetty",
+      }
+    - {
+        src: "{{ jetty_start_ini }}",
+        dest: "/opt/jetty/start.ini",
+      }
+
+- name: "Start jetty by re-reading configs"
+  become: true
+  become_method: sudo
+  ansible.builtin.systemd_service:
+    name: "jetty"
+    daemon_reload: True
+    enabled: True
+    state: started
+  when:
+    - jetty_src_link.changed
+  tags: 
+    - jetty
+    - jetty-restart

@@ -1,0 +1,64 @@
+---
+# tasks file for manage-swapfile.yml
+
+- name: "Check existance of /{{ common_swap_file_name }}"
+  ansible.builtin.command: "file /{{ common_swap_file_name }}"
+  register: swapfile
+  changed_when: False
+
+- name: "Add SWAP file"
+  block:
+    - name: "Write swapfile"
+      ansible.builtin.command: "dd if=/dev/zero of=/{{ common_swap_file_name }} bs=1M count={{ common_swap_file_size }}"
+      register: write_swapfile
+      when:
+        - swapfile.stdout.find('swap file') == -1
+
+    - name: "Set swapfile permissions"
+      ansible.builtin.file:
+        path: "/{{ common_swap_file_name }}"
+        mode: "0600"
+      when:
+        - swapfile.stdout.find('swap file') == -1
+
+    - name: "Create swapfile"
+      ansible.builtin.command: "mkswap /{{ common_swap_file_name }}"
+      register: create_swapfile
+      when:
+        - swapfile.stdout.find('swap file') == -1 or write_swapfile.changed
+
+    - name: "Add swap line on /etc/fstab"
+      ansible.builtin.lineinfile:
+        path: /etc/fstab
+        line: "/{{ common_swap_file_name }}  none  swap  sw 0 0"
+
+    - name: "Enable swapfile"
+      ansible.builtin.command: "swapon /{{ common_swap_file_name }}"
+      when:
+        - swapfile.stdout.find('swap file') == -1 or create_swapfile.changed
+  when:
+    - common_swap_file_state == "present"
+
+- name: "Remove SWAP file"
+  block:
+    - name: "Disable swapfile"
+      ansible.builtin.command: "swapoff /{{ common_swap_file_name }}"
+      when:
+        - swapfile.stdout.find('swap file') != -1
+
+    - name: "Remove swap line on /etc/fstab"
+      ansible.builtin.lineinfile:
+        path: "/etc/fstab"
+        line: "/{{ common_swap_file_name }}  none  swap  sw 0 0"
+        state: absent
+      when:
+        - swapfile.stdout.find('swap file') != -1
+
+    - name: "Remove swapfile"
+      ansible.builtin.file:
+        path: "/{{ common_swap_file_name }}"
+        state: absent
+      when:
+        - swapfile.stdout.find('swap file') != -1
+  when:
+    - common_swap_file_state == "absent"

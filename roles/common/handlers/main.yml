@@ -1,0 +1,29 @@
+---
+# handlers file for common
+- name: "Restart ntp"
+  ansible.builtin.systemd_service:
+    name: ntp
+    daemon-reload: yes
+    state: restarted
+
+- name: "Restart Systemd Timesyncd"
+  ansible.builtin.systemd_service:
+    name: systemd-timesyncd
+    daemon_reload: True
+    state: restarted
+    enabled: True
+
+- name: "Restart SSH"
+  ansible.builtin.systemd_service:
+    name: ssh
+    daemon-reload: yes
+    state: restarted
+
+- name: "Restart Fail2Ban"
+  ansible.builtin.systemd_service:
+    name: fail2ban
+    daemon-reload: yes
+    state: restarted
+
+- name: "Update Timezone"
+  ansible.builtin.shell: dpkg-reconfigure --frontend noninteractive tzdata

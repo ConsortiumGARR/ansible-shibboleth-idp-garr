@@ -1,0 +1,6 @@
+JETTY_HOME=/usr/local/src/jetty-src
+JETTY_BASE=/opt/jetty
+JETTY_PID=/opt/jetty/jetty.pid
+JETTY_STATE=/opt/jetty/jetty.state
+JETTY_USER=jetty
+JETTY_START_TIMEOUT=120

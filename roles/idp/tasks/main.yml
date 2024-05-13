@@ -1,0 +1,24 @@
+---
+# tasks file for idp role
+
+- name: "Synchronize Shibboleth IdP configuration from Ansible Host"
+  ansible.builtin.import_tasks: idp-synchronize.yml
+  when:
+    - idp_sync is defined and idp_sync in ["True","true","Yes","yes"]
+  tags: idp
+
+- name: "Install Shibboleth IdP"
+  ansible.builtin.import_tasks: idp-install.yml
+  when:
+    - idp_sync is not defined or idp_sync in ["False","false","No","no",""]
+  tags: idp
+
+- name: "Configure Shibboleth IdP"
+  ansible.builtin.import_tasks: idp-configure.yml
+  when:
+    - idp_sync is not defined or idp_sync in ["False","false","No","no",""]
+  tags: idp
+
+- name: "Remove Shibboleth IdP completely"
+  ansible.builtin.import_tasks: idp-remove.yml
+  tags: [ never, idp-remove, remove ]

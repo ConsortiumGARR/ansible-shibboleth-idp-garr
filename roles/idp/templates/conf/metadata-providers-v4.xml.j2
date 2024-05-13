@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<MetadataProvider id="ShibbolethMetadata" xsi:type="ChainingMetadataProvider"
+    xmlns="urn:mace:shibboleth:2.0:metadata"
+    xmlns:security="urn:mace:shibboleth:2.0:security"
+    xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion"
+    xmlns:md="urn:oasis:names:tc:SAML:2.0:metadata"
+    xmlns:alg="urn:oasis:names:tc:SAML:metadata:algsupport"
+    xmlns:ds="http://www.w3.org/2000/09/xmldsig#"
+    xmlns:ds11="http://www.w3.org/2009/xmldsig11#"
+    xmlns:enc="http://www.w3.org/2001/04/xmlenc#"
+    xmlns:enc11="http://www.w3.org/2009/xmlenc11#"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="urn:mace:shibboleth:2.0:metadata http://shibboleth.net/schema/idp/shibboleth-metadata.xsd
+                        urn:mace:shibboleth:2.0:security http://shibboleth.net/schema/idp/shibboleth-security.xsd
+                        urn:oasis:names:tc:SAML:2.0:assertion http://docs.oasis-open.org/security/saml/v2.0/saml-schema-assertion-2.0.xsd
+                        urn:oasis:names:tc:SAML:2.0:metadata http://docs.oasis-open.org/security/saml/v2.0/saml-schema-metadata-2.0.xsd
+                        urn:oasis:names:tc:SAML:metadata:algsupport http://docs.oasis-open.org/security/saml/Post2.0/sstc-saml-metadata-algsupport-v1.0.xsd
+                        http://www.w3.org/2000/09/xmldsig# http://www.w3.org/TR/2002/REC-xmldsig-core-20020212/xmldsig-core-schema.xsd
+                        http://www.w3.org/2009/xmldsig11# http://www.w3.org/TR/2013/REC-xmldsig-core1-20130411/xmldsig11-schema.xsd
+                        http://www.w3.org/2001/04/xmlenc# http://www.w3.org/TR/xmlenc-core/xenc-schema.xsd
+                        http://www.w3.org/2009/xmlenc11# http://www.w3.org/TR/2013/REC-xmlenc-core1-20130411/xenc-schema-11.xsd"
+    sortKey="1">
+
+{% if (fqdn == 'idp.example.org') %}
+    <MetadataProvider id="SP_Example_Metadata"  xsi:type="FilesystemMetadataProvider" metadataFile="/opt/shibboleth-idp/metadata/example-sp.xml"/>
+{% else %}
+{% for md in idp_metadata_providers %}
+    <MetadataProvider
+{% if md['url'] is defined %}
+        id="{{ md['id'] }}"
+        xsi:type="FileBackedHTTPMetadataProvider"
+        backingFile="/opt/shibboleth-idp/metadata/{{ md['file'] }}"
+        metadataURL="{{ md['url'] }}"
+{% elif (md['mdQueryProtocol'] is defined) and (md['mdQueryProtocol']|length > 0) %}
+        id="{{ md['id'] }}"
+        xsi:type="DynamicHTTPMetadataProvider"
+        connectionRequestTimeout="{{ md['connectionRequestTimeout'] }}"
+        connectionTimeout="{{ md['connectionTimeout'] }}"
+        socketTimeout="{{ md['socketTimeout'] }}"
+        refreshDelayFactor="{{ md['refreshDelayFactor'] | default('0.75') }}"
+        maxCacheDuration="{{ md['maxCacheDuration'] | default('PT8H') }}"
+{% endif %}
+        disregardTLSCertificate="{{ md['disregardTLSCertificate'] | default('false') }}">
+
+{% if (md['pubKey'] is defined) and (md['pubKey']|length > 0) %}
+            <!--
+                Verify the signature on the root element of the metadata aggregate
+                using a trusted metadata signing certificate.
+            -->
+            <MetadataFilter xsi:type="SignatureValidation" requireSignedRoot="true">
+                <PublicKey>
+                    {{ md['pubKey'] }}
+                </PublicKey>
+            </MetadataFilter>
+
+{% endif %}
+{% if (md['maxValidInterval'] is defined) and (md['maxValidInterval']|length > 0) %}
+            <!--
+                Require a validUntil XML attribute on the root element and make sure its value is no more than N days into the future. 
+            -->
+            <MetadataFilter xsi:type="RequiredValidUntil" maxValidityInterval="{{ md['maxValidInterval'] }}"/>
+
+{% endif %}
+            <!-- Consume all SP metadata in the aggregate -->
+        <MetadataFilter xsi:type="EntityRole" xmlns:md="urn:oasis:names:tc:SAML:2.0:metadata">
+            <RetainedRole>md:SPSSODescriptor</RetainedRole>
+        </MetadataFilter>
+
+{% if md['mdQueryProtocol'] is defined and (md['mdQueryProtocol']|length > 0) %}
+            <MetadataQueryProtocol>{{ md['mdQueryProtocol'] }}</MetadataQueryProtocol>
+{% endif %}
+    </MetadataProvider>
+{% endfor %}   
+
+    <!--
+    Example file metadata provider. Use this if you want to load metadata
+    from a local file. You use this if you have some local SPs
+    which are not "federated" but you wish to offer a service to.
+    
+    If you do not provide a SignatureValidation filter, then you have the responsibility to
+    ensure that the contents are trustworthy.
+    -->
+    
+    <!--
+    <MetadataProvider id="LocalMetadata"  xsi:type="FilesystemMetadataProvider" metadataFile="PATH_TO_YOUR_METADATA"/>
+    -->
+
+{% endif %}
+
+</MetadataProvider>

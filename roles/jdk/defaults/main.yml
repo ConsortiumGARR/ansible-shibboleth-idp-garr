@@ -1,0 +1,4 @@
+---
+# default vars for jdk role
+
+jdk_version: "17"

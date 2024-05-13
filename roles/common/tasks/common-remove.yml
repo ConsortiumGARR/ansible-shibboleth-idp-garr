@@ -1,0 +1,24 @@
+---
+# Tasks for common-remove.yml
+
+- name: "Remove host to /etc/hosts"
+  ansible.builtin.lineinfile:
+    dest: "/etc/hosts"
+    regexp: "^{{ ansible_default_ipv4['address'] }} "
+    line: "{{ ansible_default_ipv4['address'] }} {{ fqdn }} {{ ansible_hostname }}"
+    state: absent
+
+- name: "Remove '/etc/ssl/certs/ssl-cert.crt'"
+  ansible.builtin.file:
+    path: "/etc/ssl/certs/ssl-cert.crt"
+    state: "absent"
+
+- name: "Remove '/etc/ssl/private/ssl-cert.key'"
+  ansible.builtin.file:
+    path: "/etc/ssl/private/ssl-cert.key"
+    state: "absent"
+
+- name: "Remove '/usr/local/share/ca-certificates/cacert.crt'"
+  ansible.builtin.file:
+    path: "/usr/local/share/ca-certificates/cacert.crt"
+    state: "absent"

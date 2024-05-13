@@ -1,0 +1,10 @@
+---
+# Handler's file for jetty role
+
+- name: "Restart Jetty"
+  become: true
+  become_method: sudo
+  ansible.builtin.systemd_service:
+    name: jetty
+    daemon-reload: True
+    state: restarted

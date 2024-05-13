@@ -1,0 +1,85 @@
+---
+# task file for idp-synchronize.yml
+
+- name: "Synchronize Ansible Host 'shibboleth-idp' dir with the Remote Host one"
+  ansible.posix.synchronize:
+    mode: "push"
+    src: "{{ files_dir }}/{{ fqdn }}/shibboleth-idp"
+    dest: "/opt"
+    times: true
+
+- name: "Set right permissions to Shibboleth IdP directories"
+  ansible.builtin.file:
+    path: "/opt/shibboleth-idp/{{ item.dir }}"
+    owner: "{{ item.owner }}"
+    group: "root"
+    recurse: "yes"
+    state: directory
+  loop:
+    - { owner: "root", dir: "bin" }
+    - { owner: "jetty", dir: "conf" }
+    - { owner: "root", dir: "credentials" }
+    - { owner: "root", dir: "dist" }
+    - { owner: "root", dir: "edit-webapp" }
+    - { owner: "root", dir: "flows" }
+    - { owner: "jetty", dir: "logs" }
+    - { owner: "root", dir: "messages" }
+    - { owner: "jetty", dir: "metadata" }
+    - { owner: "root", dir: "views" }
+    - { owner: "jetty", dir: "war" }
+
+- name: "Set right permissions to Shibboleth IdP 'credentials' files"
+  ansible.builtin.file:
+    path: "/opt/shibboleth-idp/credentials/{{ item.file }}"
+    owner: "{{ item.owner }}"
+    group: "root"
+    mode: "{{ item.mode }}"
+    state: file
+  loop:
+    - { file: "idp-backchannel.crt", mode: "0600", owner: "jetty" }
+    - { file: "idp-backchannel.p12", mode: "0600", owner: "jetty" }
+    - { file: "idp-encryption.crt", mode: "0600", owner: "jetty" }
+    - { file: "idp-encryption.key", mode: "0600", owner: "jetty" }
+    - { file: "idp-signing.crt", mode: "0600", owner: "jetty" }
+    - { file: "idp-signing.key", mode: "0600", owner: "jetty" }
+    - { file: "secrets.properties", mode: "0600", owner: "jetty" }
+    - { file: "sealer.kver", mode: "0600", owner: "jetty" }
+    - { file: "sealer.jks", mode: "0600", owner: "jetty" }
+  ignore_errors: true
+  notify:
+    - "Restart Jetty"
+
+- name: "Check if 'ldap-server.crt' exists into Shibboleth IdP directory"
+  ansible.builtin.stat:
+    path: "/opt/shibboleth-idp/credentials/ldap-server.crt"
+  register: shib_idp_ldap_crt
+  changed_when: false
+
+- name: "Set right permissions to the 'ldap-server.crt' file"
+  ansible.builtin.file:
+    path: "/opt/shibboleth-idp/credentials/ldap-server.crt"
+    owner: "jetty"
+    group: "root"
+    mode: "0644"
+    state: file
+  when:
+    - shib_idp_ldap_crt.stat.exists == True
+  notify:
+    - "Restart Jetty"
+
+- name: "Check if 'tmp/httpClientCache' directory exists into Shibboleth IdP directory"
+  ansible.builtin.stat:
+    path: "/opt/shibboleth-idp/tmp/httpClientCache"
+  register: shib_idp_http_client_cache_dir
+  changed_when: false
+
+- name: "Set right permissions to the 'tmp/httpClientCache' directory"
+  ansible.builtin.file:
+    path: "/opt/shibboleth-idp/tmp"
+    owner: "jetty"
+    group: "root"
+    mode: "0755"
+    recurse: "yes"
+    state: directory
+  when:
+    - shib_idp_http_client_cache_dir.stat.exists == True

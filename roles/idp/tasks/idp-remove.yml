@@ -1,0 +1,71 @@
+---
+# task file for idp-remove
+
+- name: "Delete all GPG Keys installed"
+  ansible.builtin.expect:
+    command: gpg --delete-key "Henri Mikkonen" "Ian A. Young" "security:shibboleth OBS Project" "Philip David Smart" "philsmart" "Brent Putman" "Brent Putman" "Rod Widdowson" "Scott Cantor" "Tom Zeller"
+    responses:
+      (?i)Delete\ this\ key\ from\ the\ keyring\?\ \(y\/N\):
+        - "y"
+        - "y"
+        - "y"
+        - "y"
+        - "y"
+        - "y"
+        - "y"
+        - "y"
+        - "y"
+        - "y"
+
+- name: "Delete all files and dirs installed"
+  ansible.builtin.shell: "rm -rf /usr/local/src/shibboleth-identity-provider* ; rm -rf /opt/shibboleth-idp ; rm /usr/local/src/PGP_KEYS"
+
+- name: "Check that Apache conf for Shibboleth IdP exists"
+  ansible.builtin.stat:
+    path: "/etc/apache2/sites-available/{{ fqdn }}-ssl.conf"
+  register: apache_conf_idp
+
+- name: "Remove the Apache conf for Shibboleth IdP"
+  ansible.builtin.blockinfile:
+    path: "/etc/apache2/sites-available/{{ fqdn }}-ssl.conf"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK - IDP"
+    state: absent
+  when: apache_conf_idp.stat.exists
+  notify:
+    - "Restart Apache"
+
+- name: "Check that Apache conf for Shibboleth IdP reloadable services exists"
+  ansible.builtin.stat:
+    path: "/etc/apache2/sites-available/{{ fqdn }}-ssl.conf"
+  register: apache_conf_reloadable_idp
+
+- name: "Remove the Apache conf for Shibboleth IdP reloadable services via CLI on Localhost"
+  ansible.builtin.blockinfile:
+    path: "/etc/apache2/sites-available/{{ fqdn }}-ssl.conf"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK - SHIB-LOCALHOST"
+    state: absent
+  when: apache_conf_reloadable_idp.stat.exists
+  notify:
+    - "Restart Apache"
+
+- name: "Check that idp.xml exists"
+  ansible.builtin.stat:
+    path: "/opt/jetty/webapps/idp.xml"
+  register: jetty_idp_xml
+
+- name: "Remove idp.xml from Jetty"
+  ansible.builtin.file:
+    path: /opt/jetty/webapps/idp.xml
+    state: absent
+  when: jetty_idp_xml.stat.exists
+  notify:
+    - "Restart Jetty"
+
+- name: "Remove GPG"
+  ansible.builtin.apt:
+    name: ["gpg", "gpg-agent"]
+    autoclean: true
+    autoremove: true
+    clean: true
+    purge: yes
+    state: absent

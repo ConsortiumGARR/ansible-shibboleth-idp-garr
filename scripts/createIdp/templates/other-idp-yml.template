@@ -1,0 +1,82 @@
+---
+# file: host_vars/$fqdn.yml
+
+### Machine Variables
+
+fqdn: "$fqdn"
+files_dir: "{{ inventory_dir }}/files"
+
+# Traditional CA:
+common_ssl_ca: "$ca"
+common_ssl_cert: "{{ fqdn }}.crt"
+common_ssl_key: "{{ fqdn }}.key"
+
+# ACME:
+#common_ssl_ca_acme_email: "$acme_email"
+#common_ssl_ca_acme_url: "$acme_url"
+#common_ssl_ca_acme_key_id: "$acme_key_id"
+#common_ssl_ca_acme_hmac: "$acme_hmac"
+#common_ssl_ca_acme_rsa_size: "$rsa_key_size"
+#common_ssl_ca_acme_elliptic_curve: "secp384r1"
+
+# Add(present) or Remove(absent) SWAP file.
+# Remove entirely "swap" section if you use a dedicated partition for SWAP or if don't need it.
+common_swap_file_name: "swapfile"
+common_swap_file_size: "2048"
+common_swap_file_state: "present"
+
+# Remove entirely "mirror" section to use the default distribution repositories
+common_mirror_url: "http://debian.mirror.garr.it/debian/"
+common_root_user_pw: "$root_user_pw"
+
+# NTP
+common_ntp_timezone: Europe/Rome
+
+common_ntp_servers: "0.it.pool.ntp.org 1.it.pool.ntp.org 2.it.pool.ntp.org 3.it.pool.ntp.org"
+
+common_nameservers:
+  - 193.206.141.38
+  - 193.206.141.42
+
+# apache role vars:
+apache_admin_email: "$idp_technical_email"
+
+# idp role vars:
+# check:
+# - idp/defaults  for default vars (those vars that are commonly changed on host_vars)
+# - idp/vars/     for internal vars (because their values change rarely)
+idp_sync: "no"
+
+idp_entityID: "https://{{ fqdn }}/idp/shibboleth"
+idp_scope: "$idp_scope"
+idp_displayname: "$idp_displayname"
+idp_org_url: "$org_url"
+idp_sealer_pw: "$sealer_keystore_password"
+idp_keystore_pw: "$sealer_keystore_password"
+idp_persistentId_sourceAttribute: "uid"
+idp_persistentId_salt: '$idp_persistentId_salt'
+
+# OpenLDAP StartTLS configured with ansible-idm-garr
+idp_authn_LDAP_ldapURL: "ldap://idm-dev.example.org"
+idp_authn_LDAP_baseDN: "ou=people,dc=dev,dc=example,dc=org"
+idp_authn_LDAP_bindDN: "cn=idm-user,ou=system,dc=example,dc=org"
+idp_authn_LDAP_bindDNCredential: "idm_user_pw"
+idp_authn_LDAP_trustCertificates: "true"
+idp_authn_LDAP_subtreeSearch: "false"
+idp_authn_LDAP_userFilter: "uid={user}"
+idp_authn_LDAP_usePasswordPolicy: "false"
+idp_authn_LDAP_usePasswordExpiration: "false"
+idp_attribute_resolver_LDAP_searchFilter: "(uid=$resolutionContext.principal)"
+
+### Shibboleth IdP Metadata Providers
+# You can obtain a public key from a certificate using a command such as:
+# openssl x509 -pubkey -in cert.pem -noout
+idp_metadata_providers:
+  - id: "Test-Federation-1"
+    connectionRequestTimeout: "PT2S"
+    connectionTimeout: "PT2S"
+    socketTimeout: "PT4S"
+    refreshDelayFactor: "0.025"
+    maxCacheDuration: "PT48H"
+    mdQueryProtocol: "https://mdx.url.example.org/test/"
+    pubKey: "{{ lookup('ansible.builtin.file', 'roles/idp/files/metadata/example.pubkey', lstrip=true) }}"

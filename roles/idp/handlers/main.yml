@@ -1,0 +1,9 @@
+---
+# handlers file for idp
+
+- name: "Rebuild idp.war"
+  become: true
+  become_method: sudo
+  ansible.builtin.shell: "./build.sh -Didp.target.dir=/opt/shibboleth-idp"
+  args:
+    chdir: "/opt/shibboleth-idp/bin"

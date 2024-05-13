@@ -1,0 +1,22 @@
+---
+- name: "Configure SSL with traditional Certification Authority"
+  ansible.builtin.import_tasks: "configure-ssl-ca.yml"
+  when:
+    - hostvars[inventory_hostname]['common_ssl_ca'] is defined and hostvars[inventory_hostname]['common_ssl_ca'] != ''
+    - hostvars[inventory_hostname]['common_ssl_cert'] is defined and hostvars[inventory_hostname]['common_ssl_cert'] != ''
+    - hostvars[inventory_hostname]['common_ssl_key'] is defined and hostvars[inventory_hostname]['common_ssl_key'] != ''
+    - hostvars[inventory_hostname]['common_ssl_ca_acme_email'] is not defined
+    - hostvars[inventory_hostname]['common_ssl_ca_acme_hmac'] is not defined
+    - hostvars[inventory_hostname]['common_ssl_ca_acme_key_id'] is not defined
+    - hostvars[inventory_hostname]['common_ssl_ca_acme_url'] is not defined
+
+- name: "Configure SSL with Let's Encrypt ACME protocol"
+  ansible.builtin.import_tasks: "configure-ssl-acme.yml"
+  when:
+    - hostvars[inventory_hostname]['common_ssl_ca'] is not defined
+    - hostvars[inventory_hostname]['common_ssl_cert'] is not defined
+    - hostvars[inventory_hostname]['common_ssl_key'] is not defined
+    - hostvars[inventory_hostname]['common_ssl_ca_acme_email'] is defined and hostvars[inventory_hostname]['common_ssl_ca_acme_email'] != ''
+    - hostvars[inventory_hostname]['common_ssl_ca_acme_hmac'] is defined and hostvars[inventory_hostname]['common_ssl_ca_acme_hmac'] != ''
+    - hostvars[inventory_hostname]['common_ssl_ca_acme_key_id'] is defined and hostvars[inventory_hostname]['common_ssl_ca_acme_key_id'] != ''
+    - hostvars[inventory_hostname]['common_ssl_ca_acme_url'] is defined and hostvars[inventory_hostname]['common_ssl_ca_acme_url'] != ''

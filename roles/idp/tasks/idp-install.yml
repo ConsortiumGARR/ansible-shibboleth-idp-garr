@@ -1,0 +1,111 @@
+---
+# tasks for idp-install.yml
+
+- name: "Install GPG"
+  ansible.builtin.apt:
+    name: ["gpg", "gpg-agent"]
+    state: latest
+    install_recommends: no
+
+- name: "Check if Shibboleth IdP {{ idp_version }} tarball exists"
+  ansible.builtin.stat:
+    path: "/usr/local/src/shibboleth-identity-provider-{{ idp_version }}.tar.gz"
+  register: shib_tarball
+
+- name: "Download Shibboleth and Install IdP by checking the PGP Signature first"
+  block:
+    - name: "Download shibboleth-identity-provider-{{ idp_version }}.tar.gz"
+      ansible.builtin.get_url:
+        url: "{{ shib_idp_pkg_url }}"
+        dest: "/usr/local/src"
+
+    - name: "Download shibboleth-identity-provider-{{ idp_version }}.tar.gz.asc"
+      ansible.builtin.get_url:
+        url: "{{ shib_idp_pkg_url }}.asc"
+        dest: "/usr/local/src"
+
+    - name: "Download Shibboleth PGP Keys"
+      ansible.builtin.get_url:
+        url: "https://shibboleth.net/downloads/PGP_KEYS"
+        dest: "/usr/local/src"
+
+    - name: "Import Shibboleth PGP_KEYS"
+      ansible.builtin.command: "gpg --import /usr/local/src/PGP_KEYS"
+
+    - name: "Verify the Signature of the Shibboleth package"
+      ansible.builtin.command: "gpg --verify /usr/local/src/shibboleth-identity-provider-{{ idp_version }}.tar.gz.asc /usr/local/src/shibboleth-identity-provider-{{ idp_version }}.tar.gz"
+      register: gpg_verify_shib_idp_pkg
+
+    - name: "Extract Shibboleth Identity Provider {{ idp_version }} package only if its signature is valid"
+      ansible.builtin.unarchive:
+        src: "/usr/local/src/shibboleth-identity-provider-{{ idp_version }}.tar.gz"
+        dest: "/usr/local/src"
+        owner: "root"
+        group: "root"
+        remote_src: yes
+      when:
+        - gpg_verify_shib_idp_pkg.stdout.find('Scott Cantor') == -1
+
+    - name: "Put Shibboleth Identity Provider v4.3.1 installer properties' files in the right position"
+      ansible.builtin.template:
+        src: "{{ item['src'] }}"
+        dest: "{{ item['dest'] }}"
+        owner: "root"
+        group: "root"
+        mode: "{{ item['mode'] }}"
+      loop:
+        - {
+            src: "idp-installer-v4.properties.j2",
+            dest: "/tmp/installer.properties",
+            mode: "0644",
+          }
+      when:
+        - gpg_verify_shib_idp_pkg.stdout.find('Scott Cantor') == -1
+        - idp_version == "4.3.1"
+
+    - name: "Put Shibboleth Identity Provider v{{ idp_version }} installer properties' files in the right position"
+      ansible.builtin.template:
+        src: "{{ item['src'] }}"
+        dest: "{{ item['dest'] }}"
+        owner: "root"
+        group: "root"
+        mode: "{{ item['mode'] }}"
+      loop:
+        - {
+            src: "idp-installer-v5.properties.j2",
+            dest: "/tmp/installer.properties",
+            mode: "0644",
+          }
+      when:
+        - gpg_verify_shib_idp_pkg.stdout.find('Scott Cantor') == -1
+        - "idp_version is search('^5.')"
+
+    - name: "Install Shibboleth IdP v4.3.1"
+      ansible.builtin.shell: "./install.sh -Didp.property.file=/tmp/installer.properties"
+      args:
+        chdir: "/usr/local/src/shibboleth-identity-provider-{{ idp_version }}/bin"
+      environment:
+        JAVA_HOME: "{{ java_home_dir }}"
+      when:
+        - gpg_verify_shib_idp_pkg.stdout.find('Scott Cantor') == -1
+        - idp_version == "4.3.1"
+
+    - name: "Install Shibboleth IdP v{{ idp_version }}"
+      ansible.builtin.shell: "./install.sh --propertyFile /tmp/installer.properties"
+      args:
+        chdir: "/usr/local/src/shibboleth-identity-provider-{{ idp_version }}/bin"
+      environment:
+        JAVA_HOME: "{{ java_home_dir }}"
+      when:
+        - gpg_verify_shib_idp_pkg.stdout.find('Scott Cantor') == -1
+        - "idp_version is search('^5.')"
+
+    - name: "Install Nashorn JavaScript engine"
+      ansible.builtin.expect: 
+        chdir: "/opt/shibboleth-idp/bin"
+        command: "./plugin.sh -I net.shibboleth.idp.plugin.nashorn"
+        creates: "/opt/shibboleth-idp/credentials/net.shibboleth.idp.plugin.nashorn/truststore.asc"
+        responses:
+          "[yN]": "y"
+
+  when: shib_tarball.stat.exists == False

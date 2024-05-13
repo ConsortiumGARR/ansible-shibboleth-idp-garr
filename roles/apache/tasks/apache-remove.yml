@@ -1,0 +1,22 @@
+---
+- name: "Remove installed packages"
+  ansible.builtin.apt:
+    name: [ "apache2", "apache2-utils" ]
+    purge: true
+    autoremove: true
+    state: absent
+
+- name: "Remove undeleted files/dirs"
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - "/var/lib/apache2"
+    - "/run/apache2"
+    - "/etc/apache2"
+
+- name: "Remove the user 'www-data'"
+  ansible.builtin.user:
+    name: www-data
+    state: absent
+    remove: yes

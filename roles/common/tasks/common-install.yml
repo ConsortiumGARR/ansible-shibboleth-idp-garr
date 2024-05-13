@@ -1,0 +1,71 @@
+---
+# tasks file for common-install.yml
+
+- name: "Create Ansible required dir"
+  ansible.builtin.file:
+    path: "/root/.ansible/tmp"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: "Configure the nameservers in the resolver"
+  ansible.builtin.template:
+    src: resolv.conf.j2
+    dest: /etc/resolv.conf
+    owner: "root"
+    group: "root"
+    mode: "0644"
+  when:
+    - common_nameservers is defined
+    - common_nameservers | type_debug == 'list'
+    - common_nameservers | length > 0
+
+- name: "Install needed Python3 module for apt"
+  ansible.builtin.apt:
+    name: "python3-apt"
+    install_recommends: no
+    state: present
+
+- name: "Run 'apt-get update' if the last one is more than 3600 seconds ago"
+  ansible.builtin.apt:
+    update_cache: yes
+    cache_valid_time: 3600
+
+- name: "Install needed common packages"
+  ansible.builtin.apt:
+    name:
+      [
+        "ca-certificates",
+        "openssl",
+        "ssl-cert",
+        "aptitude",
+        "debconf",
+        "debconf-utils",
+        "apt-transport-https",
+        "patch",
+        "fail2ban",
+        "python3-pexpect",
+        "python3-systemd",
+        "python3-passlib",
+        "curl",
+        "cron",
+        "rsync"
+      ]
+    install_recommends: no
+    state: latest
+
+- name: "Replace default mirror site with the preferred one"
+  ansible.builtin.replace:
+    dest: /etc/apt/sources.list
+    regexp: "http[:][/][/]deb.debian.org[/]debian[/]"
+    replace: "{{ common_mirror_url }}"
+  register: sources_list
+  when:
+    - common_mirror_url is defined and common_mirror_url != ''
+
+- name: "Run 'apt-get update' after a sources.list change"
+  ansible.builtin.apt:
+    update_cache: yes
+  when:
+    - sources_list.changed

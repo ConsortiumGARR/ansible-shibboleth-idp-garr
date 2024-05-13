@@ -1,0 +1,87 @@
+# ignore generated 'retry' files
+*.retry
+
+# ignore vault password file
+*.vault_pass.txt
+*.vault_pass
+
+*_pw.txt
+
+# ignore swp files
+*.swp
+
+# ignore emacs files
+*~
+\#*\#
+
+# Ignore all VS Code temporary files
+.vscode
+
+# Ignore all inventories that are not the example one
+inventories/*
+!inventories/example/
+
+# Ignore all "files" that are not related to idp.example.org
+!inventories/files
+inventories/files/*
+!inventories/files/idp.example.org/
+!inventories/README.md
+
+# Ignore roles not used
+roles/*
+!roles/apache/
+!roles/common/
+#!roles/disable_maintenance/
+#!roles/enable_maintenance/
+!roles/jdk/
+!roles/jetty/
+!roles/idp/
+roles/idp/templates/shib-idp-persistentId-db.sql.j2
+roles/idp/vars/staticAttributes.yml
+roles/idp/templates/shib-idp-install.properties.j2
+roles/idp/templates/installer.properties.j2
+roles/idp/templates/idp-metadata.xml.j2
+roles/idp/templates/views
+roles/idp/templates/styles
+roles/idp/templates/statistics
+roles/idp/templates/monitoring
+roles/idp/templates/messages
+roles/idp/templates/conf/services-v4.xml.j2
+roles/idp/templates/conf/global.xml.j2
+roles/idp/tasks/idp-check_mk-probes.yml
+roles/idp/tasks/idp-style-lang.yml
+roles/idp/tasks/stored-pid-install.yml
+roles/idp/tasks/idp-rsyslog.yml
+roles/idp/tasks/idp-sealer-restore.yml
+roles/idp/tasks/idp-stats-restore.yml
+roles/idp/files/jstl-1.2.jar
+roles/idp/files/jetty
+roles/idp/files/views
+roles/idp/files/statistics
+roles/idp/files/rsyslog.d
+roles/idp/files/messages
+roles/idp/files/html
+roles/idp/files/flows
+roles/idp/files/cron.daily
+roles/idp/files/conf/mvc-beans.xml
+roles/idp/files/conf/c14n
+roles/idp/files/conf/attributes/schac.xml
+roles/idp/files/conf/attributes/default-rules.xml
+#!roles/make_a_backup/
+!roles/sys-update/
+!roles/README.md
+
+# Ignore not terminated README.rst
+shib-idp-servers-balances.yml
+shib-idp-idm-servers.yml
+disable_maintenance.yml
+enable_maintenance.yml
+def_gen_shib_md_certs.py
+gen_shib_md_certs.py
+createIdP.log
+
+idem-day-idp-servers.yml
+idem-day-mfa-servers.yml
+idem-day-sp-servers.yml
+scripts/createIdp/utils/__pycache__
+inventories/files/ans-shib-idp.aai-test.garr.it/shibboleth-idp/tmp

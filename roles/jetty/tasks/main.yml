@@ -1,0 +1,14 @@
+---
+# tasks file for jetty role
+
+- name: "Install Jetty"
+  ansible.builtin.import_tasks: jetty-install.yml
+  tags: jetty
+
+- name: "Configure Jetty"
+  ansible.builtin.import_tasks: jetty-configure.yml
+  tags: jetty
+
+- name: "Remove Jetty completely"
+  ansible.builtin.import_tasks: jetty-remove.yml
+  tags: [ never, jetty-remove, remove ]

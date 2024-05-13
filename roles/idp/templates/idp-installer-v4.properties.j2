@@ -1,0 +1,21 @@
+idp.src.dir = /usr/local/src/shibboleth-identity-provider-{{ idp_version }}
+
+idp.target.dir = /opt/shibboleth-idp
+
+idp.entityID = {{ idp_entityID }}
+
+idp.host.name = {{ fqdn }}
+
+idp.scope = {{ idp_scope }}
+
+idp.keystore.password = {{ idp_keystore_pw }}
+
+idp.sealer.password = {{ idp_sealer_pw }}
+
+idp.noprompt = true
+
+idp.initial.modules = idp.Core,idp.CommandLine,idp.EditWebApp,idp.authn.Password,idp.intercept.Consent
+
+{# http://shibboleth.net/sites/release/java-identity-provider/4.3.1/apidocs/constant-values.html #}
+{# https://shibboleth.atlassian.net/wiki/spaces/IDP4/pages/1299611775/PropertyDrivenInstallation #}
+{# https://shibboleth.atlassian.net/wiki/spaces/IDP5/pages/3199512583/Programming+the+V5+Installer#}

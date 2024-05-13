@@ -1,0 +1,66 @@
+{# https://shibboleth.atlassian.net/wiki/spaces/IDPPLUGINS/pages/3261923329/Metadatagen #}
+<?xml version="1.0" encoding="UTF-8"?>
+<md:EntityDescriptor entityID="{{ idp_entityID }}" 
+xmlns:md="urn:oasis:names:tc:SAML:2.0:metadata" 
+xmlns:mdui="urn:oasis:names:tc:SAML:metadata:ui" 
+xmlns:shibmd="urn:mace:shibboleth:metadata:1.0" 
+xmlns:ds="http://www.w3.org/2000/09/xmldsig#">
+    <md:IDPSSODescriptor protocolSupportEnumeration="urn:oasis:names:tc:SAML:2.0:protocol">
+
+        <md:Extensions>
+            <shibmd:Scope regexp="false">{{ idp_scope }}</shibmd:Scope>
+            <mdui:UIInfo xmlns:mdui="urn:oasis:names:tc:SAML:metadata:ui">
+                <mdui:DisplayName xml:lang="en">{{ idp_displayname }}</mdui:DisplayName>
+                <mdui:Description xml:lang="en">Identity Provider of {{ idp_displayname }}</mdui:Description>
+            </mdui:UIInfo>
+        </md:Extensions>
+
+        <md:KeyDescriptor use="signing">
+            <ds:KeyInfo>
+                    <ds:X509Data>
+                        <ds:X509Certificate>
+{{ idp_backchannel_cert.stdout | regex_replace('-+.*', '') }}
+                        </ds:X509Certificate>
+                    </ds:X509Data>
+            </ds:KeyInfo>
+        </md:KeyDescriptor>
+
+        <md:KeyDescriptor use="signing">
+            <ds:KeyInfo>
+                    <ds:X509Data>
+                        <ds:X509Certificate>
+{{ idp_signing_cert.stdout | regex_replace('-+.*', '') }}
+                        </ds:X509Certificate>
+                    </ds:X509Data>
+            </ds:KeyInfo>
+        </md:KeyDescriptor>
+
+        <md:KeyDescriptor use="encryption">
+            <ds:KeyInfo>
+                    <ds:X509Data>
+                        <ds:X509Certificate>
+{{ idp_encryption_cert.stdout | regex_replace('-+.*', '') }}
+                        </ds:X509Certificate>
+                    </ds:X509Data>
+            </ds:KeyInfo>
+        </md:KeyDescriptor>
+
+        <md:SingleLogoutService Binding="urn:oasis:names:tc:SAML:2.0:bindings:SOAP" Location="https://{{ fqdn }}/idp/profile/SAML2/SOAP/SLO"/>
+        <md:SingleLogoutService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect" Location="https://{{ fqdn }}/idp/profile/SAML2/Redirect/SLO"/>
+
+        <md:NameIDFormat>urn:oasis:names:tc:SAML:2.0:nameid-format:transient</md:NameIDFormat>
+        <md:NameIDFormat>urn:oasis:names:tc:SAML:2.0:nameid-format:persistent</md:NameIDFormat>
+
+        <md:SingleSignOnService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST" Location="https://{{ fqdn }}/idp/profile/SAML2/POST/SSO"/>
+        <md:SingleSignOnService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST-SimpleSign" Location="https://{{ fqdn }}/idp/profile/SAML2/POST-SimpleSign/SSO"/>
+        <md:SingleSignOnService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect" Location="https://{{ fqdn }}/idp/profile/SAML2/Redirect/SSO"/>
+    </md:IDPSSODescriptor>
+    <md:Organization>
+        <md:OrganizationName xml:lang="en">{{ idp_displayname }}</md:OrganizationName>
+        <md:OrganizationDisplayName xml:lang="en">{{ idp_displayname }}</md:OrganizationDisplayName>
+        <md:OrganizationURL xml:lang="en">{{ idp_org_url }}</md:OrganizationURL>
+    </md:Organization>
+    <md:ContactPerson contactType="technical">
+        <md:EmailAddress>mailto:{{ apache_admin_email }}</md:EmailAddress>
+    </md:ContactPerson>
+</md:EntityDescriptor>

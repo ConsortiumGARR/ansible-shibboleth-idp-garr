@@ -1,0 +1,5 @@
+options attempts:3
+
+{% for ns in common_nameservers %}
+nameserver {{ ns }}
+{% endfor %}

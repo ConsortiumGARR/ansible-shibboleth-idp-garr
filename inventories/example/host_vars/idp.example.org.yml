@@ -1,0 +1,81 @@
+---
+# idp.example.org host vars
+
+## COMMON role vars
+
+fqdn: "idp.example.org"
+files_dir: "{{ playbook_dir }}/inventories/files"
+
+### SSL with Traditional CA
+common_ssl_ca: "ca.crt"
+common_ssl_cert: "{{ fqdn }}.crt"
+common_ssl_key: "{{ fqdn }}.key"
+
+common_swap_file_name: "swapfile"
+common_swap_file_size: "2048"
+common_swap_file_state: "present"
+common_mirror_url: "http://deb.debian.org/debian/"
+
+common_root_user_pw: "root_password"
+common_ntp_timezone: "UTC"
+common_ntp_servers: "0.it.pool.ntp.org 1.it.pool.ntp.org 2.it.pool.ntp.org 3.it.pool.ntp.org"
+
+common_nameservers:
+  - "1.0.0.1"
+  - "1.1.1.1"
+
+## APACHE role vars
+apache_admin_email: "root@localhost"
+
+## IDP role vars
+idp_sync: "no"
+idp_version: "5.1.2"
+idp_entityID: "https://{{ fqdn }}/idp/shibboleth"
+idp_scope: "example.org"
+idp_displayname: "Example IdP"
+idp_org_url: "https://www.example.org/en"
+idp_sealer_pw: "sealerpw"
+idp_keystore_pw: "keystorepw"
+idp_persistentId_sourceAttribute: "uid"
+idp_persistentId_salt: 'ajDtK#eC3B3WaMHm4q?txd9aNhm6R%'
+
+### OpenLDAP + StartTLS
+idp_authn_LDAP_ldapURL: "ldap://ldap.example.org"
+idp_authn_LDAP_baseDN: "ou=people,dc=ldap,dc=example,dc=org"
+idp_authn_LDAP_bindDN: "cn=idm-user,ou=system,dc=ldap,dc=example,dc=org"
+idp_authn_LDAP_bindDNCredential: "ldap_user_pw"
+idp_authn_LDAP_trustCertificates: "yes"
+idp_authn_LDAP_useStartTLS: "yes"
+idp_authn_LDAP_subtreeSearch: "false"
+idp_authn_LDAP_userFilter: "uid={user}"
+idp_authn_LDAP_usePasswordPolicy: "false"
+idp_authn_LDAP_usePasswordExpiration: "false"
+idp_attribute_resolver_LDAP_searchFilter: "(uid=$resolutionContext.principal)"
+
+### Shibboleth IdP Metadata Providers
+### You can obtain a public key from a certificate using a command such as:
+### openssl x509 -pubkey -in cert.pem -noout
+idp_metadata_providers:
+  - id: "MetadataProviderID_1"
+    file: "federation-metadata.xml"
+    url: "## FEDERATION METADATA URL ##"
+    maxValidInterval: "P10D"
+    disregardTLSCertificate: "false"
+    pubKey: |
+      MIIBojANBgkqhkiG9w0BAQEFAAOCAY8AMIIBigKCAYEA32nIKnrjRK7Ib+bpKKft
+      iUw7/wte3bVAoYfEg6767QnnZrF4yT0VPygAHCRdM0No2zvXtOpH8oKpJgwSdpes
+      C2F6EK7MiplSD2Y2LrKhJOeFUvYgKjOb2vsiGRmv5IxHPrrkJOW61pma9t8CobBv
+      i2LC3SZRWTA4Vgazp8GJDk+y2MPJRIOF7EOVeB35czY8aTHVeh195UReNf4cuUKk
+      kJMcJXqQPl00PT8eFiC3R/VJOtgqSuhEPBI00VvOSC7mgRuuzLIrZVPe41vtTHj3
+      +z+7DRgOu/3dFB65WS8v/EKWlwWm3vYBim9BdNMOZuKSQB/xN53OHNP2ZKcV1M+a
+      gu0yULbPRQxURmoDKhE+Tp0WTv9Hy18xzmFBoaq5Rt+30cPgn3SPbNekguE5K3Am
+      7GX9rw0Q+Wkyks1QRQvpdl7NhEJRInvZe2Xl0LR1Bl6bBmPVx2Qbcu5ZuDGYYq3s
+      dhP/0UGOwHUWnIllq7lx5+FdVH6DVdLeFVJh5LCbNO+rAgMBBAE=
+  - id: "MetadataProviderID_2"
+    connectionRequestTimeout: "PT2S"
+    connectionTimeout: "PT2S"
+    socketTimeout: "PT4S"
+    refreshDelayFactor: "0.025"
+    maxCacheDuration: "PT48H"
+    mdQueryProtocol: "https://mdq.example.org/global/"
+    pubKey: "{{ lookup('ansible.builtin.file', 'roles/idp/files/metadata/example.pubkey', lstrip=true) }}"
