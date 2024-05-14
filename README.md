@@ -59,7 +59,7 @@ These instruction are tested on Debian 12 (bookworm):
 
 04. Download Ansible-Shibboleth-IDP-GARR project from GIT:
 
-    `cd $HOME ; git clone https://gitlab.dir.garr.it/IDEM/ansible-shibboleth-idp-garr.git`
+    `cd $HOME ; git clone git@github.com:ConsortiumGARR/ansible-shibboleth-idp-garr.git`
 
 05. Create the `debian` user on the remote server to configure:
 
