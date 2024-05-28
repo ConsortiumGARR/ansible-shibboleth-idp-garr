@@ -96,18 +96,18 @@ These instruction are tested on Debian 12 (bookworm):
 
       `/opt/shibboleth-idp/bin/aacli.sh -r https://sp.example.org/shibboleth -n demo --saml2`
 
-    * Execute Ansible on `develoment` inventory and install and configure an IdP only on a specific server (FQDN):
-     `ansible-playbook shib-idp-servers.yml -i inventories/develoment/develoment.ini --limit idp.fqdn.org --vault-password-file .vault_pass`
+    * Execute Ansible on `development` inventory and install and configure an IdP only on a specific server (FQDN):
+     `ansible-playbook shib-idp-servers.yml -i inventories/development/development.ini --limit idp.fqdn.org --vault-password-file .vault_pass`
 
-    * Execute Ansible on `develoment` inventory and to install and configure all IdPs into the development inventory:
-     `ansible-playbook shib-idp-servers.yml -i inventories/develoment/develoment.ini`
+    * Execute Ansible on `development` inventory and to install and configure all IdPs into the development inventory:
+     `ansible-playbook shib-idp-servers.yml -i inventories/development/development.ini`
 
 [[TOC](#table-of-content)]
 
 ## Useful Commands
 
 ```ini
---- inventories/develoment/development.ini ---
+--- inventories/development/development.ini ---
 [shib_idp]
 idp.fqdn.org ansible_host=192.168.1.5 ansible_connection=ssh ansible_user=debian ansible_ssh_private_key_file=/ssh/private/key/path
 ```
@@ -117,47 +117,47 @@ idp.fqdn.org ansible_host=192.168.1.5 ansible_connection=ssh ansible_user=debian
 
 01. Test that the connection with the server(s) is working:
 
-    `ansible all -m ping -i inventories/develoment/develoment.ini -u debian`
+    `ansible all -m ping -i inventories/development/development.ini -u debian`
 
 02. Get the facts from the server(s):
 
-    `ansible GROUP_NAME_or_HOST_NAME -m setup -i inventories/develoment/develoment.ini -u debian`
+    `ansible GROUP_NAME_or_HOST_NAME -m setup -i inventories/development/development.ini -u debian`
 
     Examples:
 
     * without encrypted files:
   
-      `ansible shib_idp -m setup -i inventories/develoment/develoment.ini -u debian`
+      `ansible shib_idp -m setup -i inventories/development/development.ini -u debian`
 
     * with encrypted files:
 
-      `ansible idp.example.org -m setup -i inventories/develoment/develoment.ini -u debian --vault-password-file .vault_pass`
+      `ansible idp.example.org -m setup -i inventories/development/development.ini -u debian --vault-password-file .vault_pass`
 
       (`.vault_pass` is the file you have created that contains the encryption password)
 
 03. Reboot all servers after 1 minute:
 
-    `ansible all -m command -a "/sbin/shutdown -r +1" -i inventories/develoment/develoment.ini -u debian --vault-password-file .vault_pass --become`
+    `ansible all -m command -a "/sbin/shutdown -r +1" -i inventories/development/development.ini -u debian --vault-password-file .vault_pass --become`
 
 04. Encrypt files with Ansible Vault:
 
-    `ansible-vault encrypt inventories/develoment/host_vars/idp.fqdn.org.yml --vault-password-file .vault_pass`
+    `ansible-vault encrypt inventories/development/host_vars/idp.fqdn.org.yml --vault-password-file .vault_pass`
 
 05. Decrypt Encrypted files with Ansible Vault:
 
-    `ansible-vault decrypt inventories/develoment/host_vars/idp.fqdn.org.yml --vault-password-file .vault_pass`
+    `ansible-vault decrypt inventories/development/host_vars/idp.fqdn.org.yml --vault-password-file .vault_pass`
 
 06. View Encrypted files with Ansible Vault:
 
-    `ansible-vault view inventories/develoment/host_vars/idp.fqdn.org.yml --vault-password-file .vault_pass`
+    `ansible-vault view inventories/development/host_vars/idp.fqdn.org.yml --vault-password-file .vault_pass`
 
 07. Remove Shibboleth IdP (without Ansible Vault):
 
-    `ansible-playbook shib-idp-servers.yml -i inventories/develoment/develoment.ini --limit idp.fqdn.org --tags idp-remove`
+    `ansible-playbook shib-idp-servers.yml -i inventories/development/development.ini --limit idp.fqdn.org --tags idp-remove`
 
 08. Remove Apache, JDK, Jetty and Shibboleth IdP (without Ansible Vault):
 
-    `ansible-playbook shib-idp-servers.yml -i inventories/develoment/develoment.ini --limit idp.fqdn.org --tags remove`
+    `ansible-playbook shib-idp-servers.yml -i inventories/development/development.ini --limit idp.fqdn.org --tags remove`
 
 [[TOC](#table-of-content)]
 
