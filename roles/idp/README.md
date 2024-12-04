@@ -56,7 +56,7 @@ See `defaults/main.yml` to discover variables that can/should be set to use this
         # 'jetty' role vars.
     - role: idp
       vars:
-        idp_version: "5.1.2"
+        idp_version: "5.1.3"
         idp_sync: "no"
         idp_entityID: "https://idp.example.org/idp/shibboleth"
         idp_scope: "example.org"
