@@ -30,11 +30,12 @@ apache_admin_email: "$idp_technical_email"
 ### IDP role vars
 idp_sync: "no"
 
-idp_version: "5.1.2"
+idp_version: "5.1.3"
 idp_entityID: "https://{{ fqdn }}/idp/shibboleth"
 idp_scope: "$idp_scope"
 idp_displayname: "$idp_displayname"
 idp_org_url: "$org_url"
+idp_technical_contact: "$idp_technical_email"
 idp_sealer_pw: "$sealer_keystore_password"
 idp_keystore_pw: "$sealer_keystore_password"
 idp_persistentId_sourceAttribute: "uid"

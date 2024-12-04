@@ -29,11 +29,12 @@ apache_admin_email: "root@localhost"
 
 ## IDP role vars
 idp_sync: "no"
-idp_version: "5.1.2"
+idp_version: "5.1.3"
 idp_entityID: "https://{{ fqdn }}/idp/shibboleth"
 idp_scope: "example.org"
 idp_displayname: "Example IdP"
 idp_org_url: "https://www.example.org/en"
+idp_technical_contact: "root@localhost"
 idp_sealer_pw: "sealerpw"
 idp_keystore_pw: "keystorepw"
 idp_persistentId_sourceAttribute: "uid"

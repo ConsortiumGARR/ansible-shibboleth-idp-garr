@@ -96,18 +96,18 @@ These instruction are tested on Debian 12 (bookworm):
 
       `/opt/shibboleth-idp/bin/aacli.sh -r https://sp.example.org/shibboleth -n demo --saml2`
 
-    * Execute Ansible on `development` inventory and install and configure an IdP only on a specific server (FQDN):
-     `ansible-playbook shib-idp-servers.yml -i inventories/development/development.ini --limit idp.fqdn.org --vault-password-file .vault_pass`
+    * Execute Ansible on `develoment` inventory and install and configure an IdP only on a specific server (FQDN):
+     `ansible-playbook shib-idp-servers.yml -i inventories/develoment/develoment.ini --limit idp.fqdn.org --vault-password-file .vault_pass`
 
-    * Execute Ansible on `development` inventory and to install and configure all IdPs into the development inventory:
-     `ansible-playbook shib-idp-servers.yml -i inventories/development/development.ini`
+    * Execute Ansible on `develoment` inventory and to install and configure all IdPs into the development inventory:
+     `ansible-playbook shib-idp-servers.yml -i inventories/develoment/develoment.ini`
 
 [[TOC](#table-of-content)]
 
 ## Useful Commands
 
 ```ini
---- inventories/development/development.ini ---
+--- inventories/develoment/development.ini ---
 [shib_idp]
 idp.fqdn.org ansible_host=192.168.1.5 ansible_connection=ssh ansible_user=debian ansible_ssh_private_key_file=/ssh/private/key/path
 ```
@@ -117,47 +117,47 @@ idp.fqdn.org ansible_host=192.168.1.5 ansible_connection=ssh ansible_user=debian
 
 01. Test that the connection with the server(s) is working:
 
-    `ansible all -m ping -i inventories/development/development.ini -u debian`
+    `ansible all -m ping -i inventories/develoment/develoment.ini -u debian`
 
 02. Get the facts from the server(s):
 
-    `ansible GROUP_NAME_or_HOST_NAME -m setup -i inventories/development/development.ini -u debian`
+    `ansible GROUP_NAME_or_HOST_NAME -m setup -i inventories/develoment/develoment.ini -u debian`
 
     Examples:
 
     * without encrypted files:
   
-      `ansible shib_idp -m setup -i inventories/development/development.ini -u debian`
+      `ansible shib_idp -m setup -i inventories/develoment/develoment.ini -u debian`
 
     * with encrypted files:
 
-      `ansible idp.example.org -m setup -i inventories/development/development.ini -u debian --vault-password-file .vault_pass`
+      `ansible idp.example.org -m setup -i inventories/develoment/develoment.ini -u debian --vault-password-file .vault_pass`
 
       (`.vault_pass` is the file you have created that contains the encryption password)
 
 03. Reboot all servers after 1 minute:
 
-    `ansible all -m command -a "/sbin/shutdown -r +1" -i inventories/development/development.ini -u debian --vault-password-file .vault_pass --become`
+    `ansible all -m command -a "/sbin/shutdown -r +1" -i inventories/develoment/develoment.ini -u debian --vault-password-file .vault_pass --become`
 
 04. Encrypt files with Ansible Vault:
 
-    `ansible-vault encrypt inventories/development/host_vars/idp.fqdn.org.yml --vault-password-file .vault_pass`
+    `ansible-vault encrypt inventories/develoment/host_vars/idp.fqdn.org.yml --vault-password-file .vault_pass`
 
 05. Decrypt Encrypted files with Ansible Vault:
 
-    `ansible-vault decrypt inventories/development/host_vars/idp.fqdn.org.yml --vault-password-file .vault_pass`
+    `ansible-vault decrypt inventories/develoment/host_vars/idp.fqdn.org.yml --vault-password-file .vault_pass`
 
 06. View Encrypted files with Ansible Vault:
 
-    `ansible-vault view inventories/development/host_vars/idp.fqdn.org.yml --vault-password-file .vault_pass`
+    `ansible-vault view inventories/develoment/host_vars/idp.fqdn.org.yml --vault-password-file .vault_pass`
 
 07. Remove Shibboleth IdP (without Ansible Vault):
 
-    `ansible-playbook shib-idp-servers.yml -i inventories/development/development.ini --limit idp.fqdn.org --tags idp-remove`
+    `ansible-playbook shib-idp-servers.yml -i inventories/develoment/develoment.ini --limit idp.fqdn.org --tags idp-remove`
 
 08. Remove Apache, JDK, Jetty and Shibboleth IdP (without Ansible Vault):
 
-    `ansible-playbook shib-idp-servers.yml -i inventories/development/development.ini --limit idp.fqdn.org --tags remove`
+    `ansible-playbook shib-idp-servers.yml -i inventories/develoment/develoment.ini --limit idp.fqdn.org --tags remove`
 
 [[TOC](#table-of-content)]
 
@@ -207,12 +207,13 @@ idp.fqdn.org ansible_host=192.168.1.5 ansible_connection=ssh ansible_user=debian
 | `jetty_logback_lib_version`                          | Logback library version                                                                                                          | `1.5.3`                                                                                             | No                                                                          |
 | `jetty_requestlog_file`                              | Request Log file name                                                                                                            | `jetty-requestlog.xml`                                                                              | No                                                                          |
 | `jetty_start_ini`                                    | Jetty start.ini file to use                                                                                                      | `files/java{{ jdk_version }}/start.ini`                                                             | No                                                                          |
-| `idp_version`                                        | Shibboleth IDP version                                                                                                           | `5.1.2`                                                                                             | No                                                                          |
+| `idp_version`                                        | Shibboleth IDP version                                                                                                           | `5.1.3`                                                                                             | No                                                                          |
 | `idp_sync`                                           | Synchronize `/opt/shibboleth-idp` content from Ansible Host to the Remote Host dir                                               | `no`                                                                                                | Yes                                                                         |
 | `idp_entityID`                                       | entityID IdP                                                                                                                     | `https://idp.example.org/idp/shibboleth`                                                            | Yes                                                                         |
 | `idp_scope`                                          | A string reporting one domain name belonging the institution                                                                     | `example.org`                                                                                       | Yes                                                                         |
 | `idp_displayname`                                    | Metadata DisplayName english value                                                                                               | `Example` IdP                                                                                       | Yes                                                                         |
 | `idp_org_url`                                        | metadata OrganizationUrl english value                                                                                           | `https://org.example.org/en`                                                                        | Yes                                                                         |
+| `idp_technical_contact`                                 | IdP Technical Contact e-mail address                                                                            | `root@localhost`                                                                                    | Yes                                                                         |
 | `idp_sealer_pw`                                      | sealer password                                                                                                                  | `sealer-password`                                                                                   | Yes                                                                         |
 | `idp_keystore_pw`                                    | keystore password                                                                                                                | `keystore-password`                                                                                 | Yes                                                                         |
 | `idp_persistentId_sourceAttribute`                   | persistent-id source attribute                                                                                                   | `uid`                                                                                               | Yes                                                                         |

@@ -2,7 +2,7 @@
 # default vars for idp role
 
 #idp_version: "4.3.1"
-idp_version: "5.1.2"
+idp_version: "5.1.3"
 
 idp_sync: "no"
 
@@ -10,6 +10,7 @@ idp_entityID: "https://idp.example.org/idp/shibboleth"
 idp_scope: "example.org"
 idp_displayname: "Example IdP"
 idp_org_url: "https://org.example.org/en"
+idp_technical_contact: "root@localhost"
 idp_sealer_pw: "sealer-password"
 idp_keystore_pw: "keystore-password"
 idp_persistentId_sourceAttribute: "uid"
