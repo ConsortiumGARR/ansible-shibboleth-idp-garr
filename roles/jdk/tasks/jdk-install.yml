@@ -17,6 +17,7 @@
       ansible.builtin.get_url:
         url: https://apt.corretto.aws/corretto.key
         dest: /etc/apt/keyrings/amazon-corretto-jdk.asc
+        force: true
 
     - name: Add Amazon Corretto JDK APT repository
       ansible.builtin.apt_repository:
