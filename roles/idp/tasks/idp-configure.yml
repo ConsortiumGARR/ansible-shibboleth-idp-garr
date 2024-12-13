@@ -1,35 +1,37 @@
 ---
 - name: "Set right permissions to Shibboleth IdP directories"
   ansible.builtin.file:
-    path: "/opt/shibboleth-idp/{{ item['dir'] }}"
-    owner: "{{ item['owner'] }}"
+    path: "/opt/shibboleth-idp/{{ item }}"
+    owner: "jetty"
     group: "root"
+    mode: "0755"
     recurse: "yes"
     state: directory
   loop:
-    - { owner: "jetty", dir: "conf" }
-    - { owner: "jetty", dir: "logs" }
-    - { owner: "jetty", dir: "metadata" }
-    - { owner: "jetty", dir: "war" }
+    - "conf"
+    - "logs"
+    - "metadata"
+    - "war"
+    - "tmp"
   ignore_errors: true
 
 - name: "Set right permissions to Shibboleth IdP 'credentials' files"
   ansible.builtin.file:
-    path: "/opt/shibboleth-idp/credentials/{{ item.file }}"
-    owner: "{{ item['owner'] }}"
+    path: "/opt/shibboleth-idp/credentials/{{ item }}"
+    owner: "jetty"
     group: "root"
-    mode: "{{ item['mode'] }}"
+    mode: "600"
     state: file
   loop:
-    - { file: "idp-backchannel.crt", mode: "600", owner: "jetty" }
-    - { file: "idp-backchannel.p12", mode: "600", owner: "jetty" }
-    - { file: "idp-encryption.crt", mode: "600", owner: "jetty" }
-    - { file: "idp-encryption.key", mode: "600", owner: "jetty" }
-    - { file: "idp-signing.crt", mode: "600", owner: "jetty" }
-    - { file: "idp-signing.key", mode: "600", owner: "jetty" }
-    - { file: "secrets.properties", mode: "600", owner: "jetty" }
-    - { file: "sealer.jks", mode: "600", owner: "jetty" }
-    - { file: "sealer.kver", mode: "600", owner: "jetty" }
+    - "idp-backchannel.crt"
+    - "idp-backchannel.p12"
+    - "idp-encryption.crt"
+    - "idp-encryption.key"
+    - "idp-signing.crt"
+    - "idp-signing.key"
+    - "secrets.properties"
+    - "sealer.jks"
+    - "sealer.kver"
   ignore_errors: true
 
 - name: "Check if 'ldap-server.crt' is provided by Ansible Host"
