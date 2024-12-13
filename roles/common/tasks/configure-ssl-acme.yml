@@ -53,7 +53,7 @@
     - common_ssl_ca_acme_rsa_size is not defined
     - common_ssl_ca_acme_elliptic_curve is defined and common_ssl_ca_acme_elliptic_curve != ''
 
-- name: "ACME - Check that SSL Certificate is in '/etc/ssl/certs'"
+- name: "ACME - Check that SSL Certificate is in '/etc/ssl/certs/ssl-cert.crt'"
   ansible.builtin.file:
     src: "/etc/letsencrypt/live/{{ fqdn }}/cert.pem"
     dest: "/etc/ssl/certs/ssl-cert.crt"
@@ -63,7 +63,7 @@
     mode: '0644'
   register: ssl_cert_acme
 
-- name: "ACME - Check that SSL Certificate is in '/etc/ssl/certs'"
+- name: "ACME - Check that SSL Certificate Key is in '/etc/ssl/private/ssl-cert.key'"
   ansible.builtin.file:
     src: "/etc/letsencrypt/live/{{ fqdn }}/privkey.pem"
     dest: "/etc/ssl/private/ssl-cert.key"
@@ -106,22 +106,6 @@
     state: restarted
   when:
     - check_apache2.stat.exists == True
-    - ssl_ca_acme['changed'] == True or ssl_key_acme['changed'] == True or ssl_cert_acme['changed'] == True
-
-- name: "Check if OpenLDAP exists"
-  ansible.builtin.stat:
-    path: "/etc/init.d/slapd"
-  register: check_slapd
-
-- name: "Restart OpenLDAP"
-  become: true
-  become_method: sudo
-  ansible.builtin.systemd_service:
-    name: slapd
-    daemon_reload: yes
-    state: restarted
-  when:
-    - check_slapd.stat.exists == True
     - ssl_ca_acme['changed'] == True or ssl_key_acme['changed'] == True or ssl_cert_acme['changed'] == True
 
 - name: "Check if Jetty exists"

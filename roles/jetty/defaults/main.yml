@@ -3,8 +3,8 @@
 # CHANGE THEM ONLY IF YOU KNOW WHAT YOU ARE DOING
 
 # Jetty 12 - Shibboleth v5.x
-jetty_distribution: "12.0.8"
-jetty_logback_lib_version: "1.5.3"
+jetty_distribution: "12.0.13"
+jetty_logback_lib_version: "1.5.8"
 jetty_requestlog_file: "jetty-requestlog.xml"
 jetty_start_ini: "files/java{{ jdk_version }}/start.ini"
 
