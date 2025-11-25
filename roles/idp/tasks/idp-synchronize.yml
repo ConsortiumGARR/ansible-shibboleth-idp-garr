@@ -8,6 +8,13 @@
     dest: "/opt"
     times: true
 
+- name: "Synchronize Ansible Host 'html' dir with the Remote Host one"
+  ansible.posix.synchronize:
+    mode: "push"
+    src: "{{ files_dir }}/{{ fqdn }}/html"
+    dest: "/var/www"
+    times: true
+
 - name: "Set right permissions to Shibboleth IdP directories"
   ansible.builtin.file:
     path: "/opt/shibboleth-idp/{{ item.dir }}"
@@ -46,8 +53,6 @@
     - { file: "sealer.kver", mode: "0600", owner: "jetty" }
     - { file: "sealer.jks", mode: "0600", owner: "jetty" }
   ignore_errors: true
-  notify:
-    - "Restart Jetty"
 
 - name: "Check if 'ldap-server.crt' exists into Shibboleth IdP directory"
   ansible.builtin.stat:
@@ -63,6 +68,27 @@
     mode: "0644"
     state: file
   when:
-    - shib_idp_ldap_crt.stat.exists == True
-  notify:
-    - "Restart Jetty"
+    - shib_idp_ldap_crt.stat.exists == true
+
+- name: "Rebuild idp.war"
+  become: true
+  become_method: sudo
+  ansible.builtin.shell: "./build.sh -Didp.target.dir=/opt/shibboleth-idp"
+  args:
+    chdir: "/opt/shibboleth-idp/bin"
+
+- name: "Restart Jetty"
+  become: true
+  become_method: sudo
+  ansible.builtin.systemd_service:
+    name: jetty
+    daemon-reload: true
+    state: restarted
+
+- name: "Restart Apache"
+  become: true
+  become_method: sudo
+  ansible.builtin.systemd_service:
+    name: apache2
+    daemon-reload: true
+    state: restarted
