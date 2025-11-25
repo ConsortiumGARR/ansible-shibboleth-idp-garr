@@ -84,4 +84,4 @@ idem-day-idp-servers.yml
 idem-day-mfa-servers.yml
 idem-day-sp-servers.yml
 scripts/createIdp/utils/__pycache__
-inventories/files/ans-shib-idp.aai-test.garr.it/shibboleth-idp/tmp
+inventories/files/shib-idp-dev.aai-test.garr.it/shibboleth-idp/tmp

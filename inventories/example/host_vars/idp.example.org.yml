@@ -39,6 +39,7 @@ idp_sealer_pw: "sealerpw"
 idp_keystore_pw: "keystorepw"
 idp_persistentId_sourceAttribute: "uid"
 idp_persistentId_salt: 'ajDtK#eC3B3WaMHm4q?txd9aNhm6R%'
+idp_persistentId_salt_encoded: "true"
 
 ### OpenLDAP + StartTLS
 idp_authn_LDAP_ldapURL: "ldap://ldap.example.org"

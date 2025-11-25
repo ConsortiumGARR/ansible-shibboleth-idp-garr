@@ -159,7 +159,11 @@
     <!-- Data Connector for eduPersonTargetedID/pairwise-id - Computed -->
     <DataConnector id="myComputedId" xsi:type="ComputedId"
         generatedAttributeID="computedId"
-        salt="%{idp.persistentId.encodedSalt}"
+        {% if idp_persistentId_salt_encoded is defined and idp_persistentId_salt_encoded in ['Yes','yes','True','true'] %}
+        encodedSalt="%{idp.persistentId.encodedSalt}"
+        {% else %}
+        salt="%{idp.persistentId.salt}"
+        {% endif %}
         algorithm="%{idp.persistentId.algorithm:SHA}"
         encoding="%{idp.persistentId.encoding:BASE32}">
 
