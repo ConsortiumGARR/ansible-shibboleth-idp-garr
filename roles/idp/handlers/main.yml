@@ -7,3 +7,5 @@
   ansible.builtin.shell: "./build.sh -Didp.target.dir=/opt/shibboleth-idp"
   args:
     chdir: "/opt/shibboleth-idp/bin"
+  notify:
+    - "Restart Jetty"
