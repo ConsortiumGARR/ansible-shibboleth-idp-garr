@@ -1,7 +1,7 @@
 ---
 # task file for jdk-install.yml
 
-# With  ansible-core 2.15
+# With  ansible-core >= 2.15
 # - name: Add Amazon Corretto JDK repo using key from URL
 #   ansible.builtin.deb822_repository:
 #     name: amazon-corretto-jdk
@@ -35,7 +35,7 @@
   ansible.builtin.apt:
     update_cache: yes
   when:
-    - default_java_link.stat.exists == False
+    - default_java_link.stat.exists == false
 
 - name: "Install Amazon Corretto JDK"
   ansible.builtin.apt:
@@ -46,6 +46,17 @@
       ]
     state: latest
     install_recommends: no
+  when: ansible_distribution_major_version == "12"
+
+- name: "Install Amazon Corretto JDK"
+  ansible.builtin.apt:
+    name:
+      [
+        "java-{{ jdk_version }}-amazon-corretto-jdk",
+      ]
+    state: latest
+    install_recommends: no
+  when: ansible_distribution_major_version == "13"
 
 - name: "Correct java version selected"
   community.general.alternatives:
