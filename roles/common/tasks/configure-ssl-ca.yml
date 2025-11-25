@@ -45,11 +45,11 @@
   become_method: sudo
   ansible.builtin.systemd_service:
     name: apache2
-    daemon_reload: yes
+    daemon_reload: true
     state: restarted
   when:
-    - check_apache2.stat.exists == True
-    - ssl_ca['changed'] == True or ssl_key['changed'] == True or ssl_cert['changed'] == True
+    - check_apache2.stat.exists == true
+    - ssl_ca['changed'] == true or ssl_key['changed'] == true or ssl_cert['changed'] == true
 
 - name: "Check if OpenLDAP exists"
   ansible.builtin.stat:
@@ -61,11 +61,11 @@
   become_method: sudo
   ansible.builtin.systemd_service:
     name: slapd
-    daemon_reload: yes
+    daemon_reload: true
     state: restarted
   when:
-    - check_slapd.stat.exists == True
-    - ssl_ca['changed'] == True or ssl_key['changed'] == True or ssl_cert['changed'] == True
+    - check_slapd.stat.exists == true
+    - ssl_ca['changed'] == true or ssl_key['changed'] == true or ssl_cert['changed'] == true
 
 - name: "Check if Jetty exists"
   ansible.builtin.stat:
@@ -77,8 +77,8 @@
   become_method: sudo
   ansible.builtin.systemd_service:
     name: jetty
-    daemon-reload: True
+    daemon-reload: true
     state: restarted
   when:
-    - check_jetty.stat.exists == True
-    - ssl_ca['changed'] == True or ssl_key['changed'] == True or ssl_cert['changed'] == True
+    - check_jetty.stat.exists == true
+    - ssl_ca['changed'] == true or ssl_key['changed'] == true or ssl_cert['changed'] == true

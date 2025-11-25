@@ -21,4 +21,4 @@
 
 - name: "Remove Shibboleth IdP completely"
   ansible.builtin.import_tasks: idp-remove.yml
-  tags: [ never, idp-remove, remove ]
+  tags: [never, idp-remove, remove]

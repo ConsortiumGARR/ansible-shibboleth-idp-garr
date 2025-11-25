@@ -11,4 +11,4 @@
 
 - name: "Remove Jetty completely"
   ansible.builtin.import_tasks: jetty-remove.yml
-  tags: [ never, jetty-remove, remove ]
+  tags: [never, jetty-remove, remove]

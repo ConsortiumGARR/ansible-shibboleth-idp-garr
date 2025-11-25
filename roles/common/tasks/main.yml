@@ -25,4 +25,4 @@
 
 - name: "Remove all common tasks files completely"
   ansible.builtin.import_tasks: common-remove.yml
-  tags: [ never, common-remove, remove ]
+  tags: [never, common-remove, remove]

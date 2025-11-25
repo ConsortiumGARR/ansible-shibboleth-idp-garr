@@ -10,4 +10,4 @@
 
 - name: "Remove Apache completely"
   ansible.builtin.import_tasks: apache-remove.yml
-  tags: [ never, apache-remove, remove ]
+  tags: [never, apache-remove, remove]

@@ -32,14 +32,14 @@
     group: "root"
     mode: "0644"
   when:
-    - http_site_apache.stat.exists == False
+    - http_site_apache.stat.exists == false
   notify:
     - "Restart Apache"
 
 - name: "Enable Apache HTTP VirtualHost"
   ansible.builtin.shell: "a2ensite -q {{ fqdn }}"
   when:
-    - http_site_apache.stat.exists == False
+    - http_site_apache.stat.exists == false
   notify:
     - "Restart Apache"
 
@@ -57,21 +57,21 @@
     group: "root"
     mode: "0644"
   when:
-    - ssl_site_apache.stat.exists == False
+    - ssl_site_apache.stat.exists == false
   notify:
     - "Restart Apache"
 
 - name: "Enable Apache HTTPS VirtualHost"
   ansible.builtin.shell: "a2ensite -q {{ fqdn }}-ssl"
   when: 
-    - ssl_site_apache.stat.exists == False
+    - ssl_site_apache.stat.exists == false
   notify:
     - "Restart Apache"
 
 - name: "Disable Default Apache HTTP VirtualHost"
   ansible.builtin.shell: "a2dissite -q 000-default"
   when: 
-    - ssl_site_apache.stat.exists == False
+    - ssl_site_apache.stat.exists == false
   notify:
     - "Restart Apache"
 
@@ -89,14 +89,14 @@
     group: "root"
     mode: "0644"
   when: 
-    - apache_local_error_pages.stat.exists == False
+    - apache_local_error_pages.stat.exists == false
   notify:
     - "Restart Apache"
 
 - name: "Enable Apache Localized error pages"
   ansible.builtin.shell: "a2enconf -q localized-error-pages"
   when: 
-    - apache_local_error_pages.stat.exists == False
+    - apache_local_error_pages.stat.exists == false
   notify:
     - "Restart Apache"
 
@@ -104,6 +104,6 @@
   ansible.builtin.systemd_service:
     state: restarted
     name: apache2
-    daemon_reload: True
+    daemon_reload: true
   when:
-    - ssl_cert['changed'] == True or ssl_key['changed'] == True or ssl_ca['changed'] == True or ssl_cert_acme['changed'] == True or ssl_key_acme['changed'] == True or ssl_ca_acme['changed'] == True
+    - ssl_cert['changed'] == true or ssl_key['changed'] == true or ssl_ca['changed'] == true or ssl_cert_acme['changed'] == true or ssl_key_acme['changed'] == true or ssl_ca_acme['changed'] == true

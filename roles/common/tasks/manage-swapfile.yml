@@ -4,7 +4,7 @@
 - name: "Check existance of /{{ common_swap_file_name }}"
   ansible.builtin.command: "file /{{ common_swap_file_name }}"
   register: swapfile
-  changed_when: False
+  changed_when: false
 
 - name: "Add SWAP file"
   block:

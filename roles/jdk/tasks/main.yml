@@ -7,4 +7,4 @@
 
 - name: "Remove Amazon Corretto JDK"
   ansible.builtin.import_tasks: jdk-remove.yml
-  tags: [ never, jdk-remove, remove ]
+  tags: [never, jdk-remove, remove]

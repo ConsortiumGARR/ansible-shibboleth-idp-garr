@@ -30,7 +30,7 @@
     owner: "jetty"
     group: "jetty"
     state: directory
-    recurse: True
+    recurse: true
   loop:
     - /opt/jetty
     - /opt/jetty/webapps
@@ -77,7 +77,7 @@
         group: "jetty"
     - name: "Copy default 'logback.xml' to the Jetty Base"
       ansible.builtin.copy:
-        remote_src: True
+        remote_src: true
         src: "/usr/local/src/jetty-src/modules/logging/logback/resources/logback.xml"
         dest: "/opt/jetty/resources/logback.xml"
         owner: jetty
@@ -110,8 +110,8 @@
   become_method: sudo
   ansible.builtin.systemd_service:
     name: "jetty"
-    daemon_reload: True
-    enabled: True
+    daemon_reload: true
+    enabled: true
     state: started
   when:
     - jetty_src_link.changed
