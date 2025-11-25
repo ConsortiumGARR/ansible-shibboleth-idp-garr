@@ -50,7 +50,7 @@
     group: "root"
     mode: "0644"
   when:
-    - shib_idp_ldap_crt.stat.exists == True
+    - shib_idp_ldap_crt.stat.exists == true
   notify:
     - "Restart Jetty"
 
@@ -78,19 +78,6 @@
     mode: "0644"
 
 - block:
-  - name: "Configure metadata-providers.xml for Shibboleth IdP v4.3.1"
-    ansible.builtin.template:
-      src: "conf/metadata-providers-v4.xml.j2"
-      dest: "/opt/shibboleth-idp/conf/metadata-providers.xml"
-      owner: "jetty"
-      group: "root"
-      mode: "0644"
-    when:
-      - idp_version == "4.3.1"
-      - idp_metadata_providers is defined
-      - idp_metadata_providers | type_debug == 'list'
-      - idp_metadata_providers | length > 0
-
   - name: "Configure metadata-providers.xml for Shibboleth IdP v{{ idp_version }}"
     ansible.builtin.template:
       src: "conf/metadata-providers-v5.xml.j2"
@@ -123,17 +110,6 @@
     - idp_metadata_providers | length > 0
 
 - block:
-  - name: "Configure 'ldap.properties' for Shibboleth v4.3.1"
-    ansible.builtin.template:
-      src: "conf/ldap-v4.properties.j2"
-      dest: "/opt/shibboleth-idp/conf/ldap.properties"
-      owner: "jetty"
-      group: "root"
-      mode: "0644"
-    when:
-      - idp_version == "4.3.1"
-      - fqdn != "idp.example.org"
-
   - name: "Configure 'ldap.properties' for Shibboleth v{{ idp_version }}"
     ansible.builtin.template:
       src: "conf/ldap-v5.properties.j2"
@@ -160,18 +136,20 @@
     path: "/opt/shibboleth-idp/credentials/secrets.properties"
     regexp: ".*idp.persistentId.salt.*"
     line: "idp.persistentId.salt ={{ idp_persistentId_salt }}"
+  when:
+    - idp_persistentId_salt_encoded is undefined or idp_persistentId_salt_encoded not in ['Yes','yes','True','true']
   notify:
     - "Restart Jetty"
 
-- name: "Configure Jetty to load the IdP war file on Jetty 10 or 11"
-  ansible.builtin.copy:
-    src: "files/idp-10-11.xml"
-    dest: "/opt/jetty/webapps/idp.xml"
-    owner: "jetty"
-    group: "jetty"
-    mode: "0644"
+- name: "Add IdP PersistentID encoed salt to secrets properties"
+  ansible.builtin.lineinfile:
+    path: "/opt/shibboleth-idp/credentials/secrets.properties"
+    regexp: ".*idp.persistentId.encodedSalt.*"
+    line: "idp.persistentId.encodedSalt ={{ idp_persistentId_salt | b64encode }}"
   when:
-    - "jetty_distribution is search('^10.') or jetty_distribution is search('^11.')"
+    - idp_persistentId_salt_encoded is defined or idp_persistentId_salt_encoded in ['Yes','yes','True','true']
+  notify:
+    - "Restart Jetty"
 
 - name: "Configure Jetty to load the IdP war file on Jetty 12"
   ansible.builtin.copy:
@@ -192,16 +170,6 @@
     mode: "0644"
   notify:
     - "Restart Jetty"
-
-- name: "Configure the script to securing cookies and other IdP v4.3.1 data"
-  ansible.builtin.copy:
-    src: "files/bin/updateIDPsecret-v4.sh"
-    dest: "/opt/shibboleth-idp/bin/updateIDPsecret.sh"
-    owner: "root"
-    group: "root"
-    mode: "0755"
-  when:
-    - idp_version == "4.3.1"
 
 - name: "Configure the script to securing cookies and other IdP v{{ idp_version }} data"
   ansible.builtin.copy:
@@ -281,15 +249,6 @@
     - "Restart Jetty"
 
 - block:
-  - name: "Configure 'saml-nameid.properties' on the Shibboleth IdP v4.3.1"
-    ansible.builtin.template:
-      src: "conf/saml-nameid-v4.properties.j2"
-      dest: "/opt/shibboleth-idp/conf/saml-nameid.properties"
-      owner: "jetty"
-      group: "root"
-      mode: "0644"
-    when:
-      - idp_version == "4.3.1"
   - name: "Configure 'saml-nameid.properties' on the Shibboleth IdP v{{ idp_version }}"
     ansible.builtin.template:
       src: "conf/saml-nameid-v5.properties.j2"
@@ -306,18 +265,6 @@
       owner: "jetty"
       group: "root"
       mode: "0644"
-  notify:
-    - "Restart Jetty"
-
-- name: "Configure 'idp.properties' on the Shibboleth IdP v4.3.1"
-  ansible.builtin.template:
-    src: "conf/idp-v4.properties.j2"
-    dest: "/opt/shibboleth-idp/conf/idp.properties"
-    owner: "jetty"
-    group: "root"
-    mode: "0644"
-  when:
-    - idp_version == "4.3.1"
   notify:
     - "Restart Jetty"
 
@@ -361,16 +308,6 @@
       group: "root"
       mode: "0644"
 
-  - name: "Load idp.example.org password-authn-config.xml on the Shibboleth IdP v4.3.1"
-    ansible.builtin.copy:
-      src: "files/conf/authn/password-authn-config-v4.xml"
-      dest: "/opt/shibboleth-idp/conf/authn/password-authn-config.xml"
-      owner: "jetty"
-      group: "root"
-      mode: "0644"
-    when: 
-      - "idp_version == '4.3.1'"
-
   - name: "Load idp.example.org password-authn-config.xml on the Shibboleth IdP v{{ idp_version }}"
     ansible.builtin.copy:
       src: "files/conf/authn/password-authn-config.xml"
@@ -401,3 +338,22 @@
     mode: "0644"
   notify:
     - "Restart Jetty"
+
+- name: "Create edit-webapp/WEB-INF required to Disable Jetty Directory indexing"
+  ansible.builtin.file:
+    path: "/opt/shibboleth-idp/edit-webapp/WEB-INF"
+    state: directory
+    owner: jetty
+    group: jetty
+    mode: "0755"
+
+- name: "Disable Jetty Directory indexing"
+  ansible.builtin.copy:
+    src: "/opt/shibboleth-idp/dist/webapp/WEB-INF/web.xml"
+    dest: "/opt/shibboleth-idp/edit-webapp/WEB-INF/web.xml"
+    owner: "jetty"
+    group: "jetty"
+    mode: "0644"
+    remote_src: "yes"
+  notify:
+    - "Rebuild idp.war"

@@ -46,23 +46,6 @@
       when:
         - gpg_verify_shib_idp_pkg.stdout.find('Scott Cantor') == -1
 
-    - name: "Put Shibboleth Identity Provider v4.3.1 installer properties' files in the right position"
-      ansible.builtin.template:
-        src: "{{ item['src'] }}"
-        dest: "{{ item['dest'] }}"
-        owner: "root"
-        group: "root"
-        mode: "{{ item['mode'] }}"
-      loop:
-        - {
-            src: "idp-installer-v4.properties.j2",
-            dest: "/tmp/installer.properties",
-            mode: "0644",
-          }
-      when:
-        - gpg_verify_shib_idp_pkg.stdout.find('Scott Cantor') == -1
-        - idp_version == "4.3.1"
-
     - name: "Put Shibboleth Identity Provider v{{ idp_version }} installer properties' files in the right position"
       ansible.builtin.template:
         src: "{{ item['src'] }}"
@@ -80,16 +63,6 @@
         - gpg_verify_shib_idp_pkg.stdout.find('Scott Cantor') == -1
         - "idp_version is search('^5.')"
 
-    - name: "Install Shibboleth IdP v4.3.1"
-      ansible.builtin.shell: "./install.sh -Didp.property.file=/tmp/installer.properties"
-      args:
-        chdir: "/usr/local/src/shibboleth-identity-provider-{{ idp_version }}/bin"
-      environment:
-        JAVA_HOME: "{{ java_home_dir }}"
-      when:
-        - gpg_verify_shib_idp_pkg.stdout.find('Scott Cantor') == -1
-        - idp_version == "4.3.1"
-
     - name: "Install Shibboleth IdP v{{ idp_version }}"
       ansible.builtin.shell: "./install.sh --propertyFile /tmp/installer.properties"
       args:
@@ -101,11 +74,11 @@
         - "idp_version is search('^5.')"
 
     - name: "Install Nashorn JavaScript engine"
-      ansible.builtin.expect: 
+      ansible.builtin.expect:
         chdir: "/opt/shibboleth-idp/bin"
         command: "./plugin.sh -I net.shibboleth.idp.plugin.nashorn"
         creates: "/opt/shibboleth-idp/credentials/net.shibboleth.idp.plugin.nashorn/truststore.asc"
         responses:
           "[yN]": "y"
 
-  when: shib_tarball.stat.exists == False
+  when: shib_tarball.stat.exists == false
