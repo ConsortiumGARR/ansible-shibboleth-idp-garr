@@ -2,14 +2,16 @@
 # task file for jdk-install.yml
 
 # With  ansible-core >= 2.15
-# - name: Add Amazon Corretto JDK repo using key from URL
-#   ansible.builtin.deb822_repository:
-#     name: amazon-corretto-jdk
-#     types: deb
-#     uris: https://apt.corretto.aws
-#     suites: "stable"
-#     components: "main"
-#     signed_by: https://apt.corretto.aws/corretto.key
+- name: Add Amazon Corretto JDK repo using key from URL
+  ansible.builtin.deb822_repository:
+    name: amazon-corretto-jdk
+    types: deb
+    uris: https://apt.corretto.aws
+    suites: "stable"
+    components: "main"
+    signed_by: https://apt.corretto.aws/corretto.key
+  when:
+    - ansible_version.full is version('2.15', '>=')
 
 - name: Add Amazon Corretto JDK repo using key from URL
   block:
@@ -24,6 +26,8 @@
         repo: "deb [arch=amd64 signed-by=/etc/apt/keyrings/amazon-corretto-jdk.asc] https://apt.corretto.aws stable main"
         filename: amazon-corretto-jdk
         state: present
+  when:
+    - ansible_version.full is version('2.15', '<')
 
 - name: "Check if Amazon Corretto JDK is already installed"
   ansible.builtin.stat:

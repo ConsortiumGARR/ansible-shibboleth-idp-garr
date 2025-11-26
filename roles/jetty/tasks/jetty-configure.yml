@@ -59,18 +59,18 @@
 
 - name: "Enable logging-logback as suggested by Shibboleth Consortium"
   block:
-    - name: Download logback-classic-{{ jetty_logback_lib_version }}.jar
+    - name: "Download logback-classic-{{ jetty_logback_lib_version }}.jar"
       ansible.builtin.get_url:
-        url: https://repo1.maven.org/maven2/ch/qos/logback/logback-classic/{{ jetty_logback_lib_version }}/logback-classic-{{ jetty_logback_lib_version }}.jar
-        checksum: sha1:https://repo1.maven.org/maven2/ch/qos/logback/logback-classic/{{ jetty_logback_lib_version }}/logback-classic-{{ jetty_logback_lib_version }}.jar.sha1
+        url: "https://repo1.maven.org/maven2/ch/qos/logback/logback-classic/{{ jetty_logback_lib_version }}/logback-classic-{{ jetty_logback_lib_version }}.jar"
+        checksum: "sha1:https://repo1.maven.org/maven2/ch/qos/logback/logback-classic/{{ jetty_logback_lib_version }}/logback-classic-{{ jetty_logback_lib_version }}.jar.sha1"
         dest: "/opt/jetty/lib/logging/logback-classic-{{ jetty_logback_lib_version }}.jar"
         timeout: "20"
         owner: "jetty"
         group: "jetty"
-    - name: Download logback-core-{{ jetty_logback_lib_version }}.jar
+    - name: "Download logback-core-{{ jetty_logback_lib_version }}.jar"
       ansible.builtin.get_url:
-        url: https://repo1.maven.org/maven2/ch/qos/logback/logback-core/{{ jetty_logback_lib_version }}/logback-core-{{ jetty_logback_lib_version }}.jar
-        checksum: sha1:https://repo1.maven.org/maven2/ch/qos/logback/logback-core/{{ jetty_logback_lib_version }}/logback-core-{{ jetty_logback_lib_version }}.jar.sha1
+        url: "https://repo1.maven.org/maven2/ch/qos/logback/logback-core/{{ jetty_logback_lib_version }}/logback-core-{{ jetty_logback_lib_version }}.jar"
+        checksum: "sha1:https://repo1.maven.org/maven2/ch/qos/logback/logback-core/{{ jetty_logback_lib_version }}/logback-core-{{ jetty_logback_lib_version }}.jar.sha1"
         dest: "/opt/jetty/lib/logging/logback-core-{{ jetty_logback_lib_version }}.jar"
         timeout: "20"
         owner: "jetty"
