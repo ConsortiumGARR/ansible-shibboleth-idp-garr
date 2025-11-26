@@ -15,10 +15,16 @@ The playbook enables, after an initial installation, the replacement of any file
 
 ## Requirements
 
-* Ansible <https://www.ansible.com/> (Tested with Ansible >= v2.14.3)
-* Python 3 (Tested with Python >= 3.10.12)
-* An Debian/Ubuntu server for:
-  * Shibboleth Identity Provider (Tested with Debian 12)
+DOC: <https://docs.ansible.com/projects/ansible/latest/reference_appendices/release_and_maintenance.html#ansible-core-support-matrix>
+
+Version 1.0.3 tested with:
+
+* Ansible Core 2.20.0
+* Python 3.13.5 (vith 'passlib' and 'validators' libraries)
+* Debian Linux 13 server for:
+  * Control Node / Ansible Master
+  * Remote Node / Ansible Slave:
+    * Shibboleth Identity Provider v5.x
 
 ## Documentation
 
