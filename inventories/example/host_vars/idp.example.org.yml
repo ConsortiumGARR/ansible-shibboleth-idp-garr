@@ -29,7 +29,7 @@ apache_admin_email: "root@localhost"
 
 ## IDP role vars
 idp_sync: "no"
-idp_version: "5.1.3"
+idp_version: "5.1.6"
 idp_entityID: "https://{{ fqdn }}/idp/shibboleth"
 idp_scope: "example.org"
 idp_displayname: "Example IdP"
