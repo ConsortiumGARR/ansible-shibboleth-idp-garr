@@ -17,7 +17,7 @@ The playbook enables, after an initial installation, the replacement of any file
 
 DOC: <https://docs.ansible.com/projects/ansible/latest/reference_appendices/release_and_maintenance.html#ansible-core-support-matrix>
 
-Version 1.0.3 tested with:
+Version 1.0.4 tested with:
 
 * Ansible Core 2.20.0
 * Python 3.13.5 (vith 'passlib' and 'validators' libraries)
@@ -65,8 +65,8 @@ These instruction are tested on Debian 12 (bookworm):
 
 04. Download Ansible-Shibboleth-IDP-GARR project from GIT:
 
-    * `cd $HOME ; git clone --depth 1 --branch v1.0.3 https://github.com/ConsortiumGARR/ansible-shibboleth-idp-garr.git`
-    * `cd ansible-shibboleth-idp-garr ; git checkout tags/v1.0.3`
+    * `cd $HOME ; git clone --depth 1 --branch v1.0.4 https://github.com/ConsortiumGARR/ansible-shibboleth-idp-garr.git`
+    * `cd ansible-shibboleth-idp-garr ; git checkout tags/v1.0.4`
 
 05. Create the `debian` user on the remote server to configure:
 
