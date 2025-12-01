@@ -1,0 +1,24 @@
+---
+# tasks for IdP Rsyslog and F-TICKS
+- name: "Install Rsyslog"
+  apt:
+    name: ["rsyslog"]
+    state: latest
+    install_recommends: no
+
+- name: "Configure Rsyslog for F-TICKS"
+  ansible.builtin.copy:
+    src: "rsyslog.d/20-fticks.conf"
+    dest: "/etc/rsyslog.d/20-fticks.conf"
+    owner: "root"
+    group: "root"
+    mode: "0644"
+  register: rsyslog_fticks
+
+- name: "Restart Rsyslog"
+  ansible.builtin.systemd_service:
+    name: rsyslog
+    daemon_reload: yes
+    state: restarted
+  when:
+    - rsyslog_fticks.changed

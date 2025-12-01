@@ -102,7 +102,7 @@
     mode: "0644"
     validate_certs: "{{ item['disregardTLSCertificate'] }}"
   loop: "{{ idp_metadata_providers }}"
-  when: 
+  when:
     - item['url'] is defined
     - fqdn != "idp.example.org"
     - idp_metadata_providers is defined
@@ -315,9 +315,9 @@
       owner: "jetty"
       group: "root"
       mode: "0644"
-    when: 
+    when:
       - "idp_version is search('^5.')"
-  when: 
+  when:
     - fqdn == "idp.example.org"
   notify:
     - Restart Jetty

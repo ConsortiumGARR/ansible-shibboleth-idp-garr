@@ -19,6 +19,12 @@
     - idp_sync is not defined or idp_sync in ["False","false","No","no",""]
   tags: idp
 
+- name: "Enable & Configure Rsyslog for F-Ticks"
+  ansible.builtin.import_tasks: idp-rsyslog.yml
+  when:
+    - idp_fticks_enabled is defined and idp_fticks_enabled in ["True","true","Yes","yes"]
+  tags: idp
+
 - name: "Remove Shibboleth IdP completely"
   ansible.builtin.import_tasks: idp-remove.yml
   tags: [never, idp-remove, remove]

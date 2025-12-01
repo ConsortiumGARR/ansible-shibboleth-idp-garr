@@ -51,14 +51,12 @@ roles/idp/templates/conf/global.xml.j2
 roles/idp/tasks/idp-check_mk-probes.yml
 roles/idp/tasks/idp-style-lang.yml
 roles/idp/tasks/stored-pid-install.yml
-roles/idp/tasks/idp-rsyslog.yml
 roles/idp/tasks/idp-sealer-restore.yml
 roles/idp/tasks/idp-stats-restore.yml
 roles/idp/files/jstl-1.2.jar
 roles/idp/files/jetty
 roles/idp/files/views
 roles/idp/files/statistics
-roles/idp/files/rsyslog.d
 roles/idp/files/messages
 roles/idp/files/html
 roles/idp/files/flows
