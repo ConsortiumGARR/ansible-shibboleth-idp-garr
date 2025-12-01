@@ -186,7 +186,8 @@
     name: "Shibboleth IdP Secrets renew"
     minute: "0"
     hour: "0"
-    job: "root /bin/bash /opt/shibboleth-idp/bin/updateIDPsecret.sh"
+    user: "root"
+    job: "/bin/bash /opt/shibboleth-idp/bin/updateIDPsecret.sh"
 
 - name: "Check if Apache conf of Shibboleth IdP is already configured"
   ansible.builtin.stat:
