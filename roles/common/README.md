@@ -34,7 +34,7 @@ If ACME protocol is used to provide SSL credentials:
 * `common_ssl_ca_acme_url` has to be valued with ACME server URL
 * `common_ssl_ca_acme_key_id` has to be valued with ACME account key ID
 * `common_ssl_ca_acme_hmac` has to be valued with ACME account HMAC Key
-* Only one between `common_ssl_ca_acme_rsa_size` and `common_ssl_ca_acme_elliptic_curve` has to be valued
+* Almost one between `common_ssl_ca_acme_rsa_size` and `common_ssl_ca_acme_elliptic_curve` has to be valued
 
 Add the Fail2Ban configuration to:
 
