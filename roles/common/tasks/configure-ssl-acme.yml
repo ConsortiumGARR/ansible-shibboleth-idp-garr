@@ -4,7 +4,7 @@
 - name: "ACME - Install Certbot required packages"
   ansible.builtin.apt:
     name:
-      ["python3", "python3-venv", "libaugeas0"]
+      ["python3", "python3-venv", "libaugeas-dev"]
     install_recommends: no
     state: latest
 
