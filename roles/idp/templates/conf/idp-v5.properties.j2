@@ -249,12 +249,16 @@ idp.ui.fallbackLanguages=en,fr,de
 
 {% if (idp_fticks_enabled is defined) and (idp_fticks_enabled in ['Yes','yes','True','true'] ) %}
 # F-TICKS auditing - set a salt to include hashed username
-idp.fticks.federation = {{ idp_fticks_federation }}
+idp.fticks.federation = {{ idp_fticks_federation|default('MyFederation') }}
+{% if (idp_fticks_condition is defined) and (idp_fticks_condition|length)%}
 idp.fticks.condition = {{ idp_fticks_condition }}
-idp.fticks.algorithm = {{ idp_fticks_algorithm }}
+{% endif %}
+idp.fticks.algorithm = {{ idp_fticks_algorithm|default('SHA-256') }}
+{% if (idp_fticks_salt is defined) and (idp_fticks_salt|length)%}
 idp.fticks.salt = {{ idp_fticks_salt }}
-idp.fticks.loghost = {{ idp_fticks_loghost }}
-idp.fticks.logport = {{ idp_fticks_logport }}
+{% endif %}
+idp.fticks.loghost = {{ idp_fticks_loghost|default('localhost') }}
+idp.fticks.logport = {{ idp_fticks_logport|default('514') }}
 {% else %}
 #idp.fticks.federation = MyFederation
 #idp.fticks.condition = MyFTICKSCondition
